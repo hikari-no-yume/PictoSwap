@@ -156,7 +156,7 @@
         var onMove = canvas.element.onmousemove = function (e) {
             // Prevent mouse moving causing drawing on desktop
             // (Obviously, "mousemove" can't fire when not dragging on 3DS)
-            if (drawing) {
+            if (drawing && (lastX !== e.layerX || lastY !== e.layerY)) {
                 // The length of this segment will be subtracted from our "ink"
                 var inkUsed = calcDistance(lastX, lastY, e.layerX, e.layerY);
 
@@ -189,6 +189,8 @@
         };
 
         saveButton.onclick = function () {
+            savePage();
+            alert(JSON.stringify(pages));
             browse(context);
         };
 
@@ -210,34 +212,38 @@
             }
         };
 
+        function savePage() {
+            pages[page] = canvas.exportStrokes();
+            pageInkUsage[page] = inkUsage;
+        }
+
+        function loadPage() {
+            canvas.importStrokes(pages[page]);
+            inkUsage = pageInkUsage[page];
+            previewCanvas.importStrokes(pages[page]);
+        }
+
+        function updatePageCounter() {
+            pageCounter.innerHTML = '';
+            pageCounter.appendChild($('p. ' + (page + 1) + '/' + pageCount));
+        }
+
         downButton.onclick = function () {
             // Limit no. of pages
             if (page + 1 < pageCount) {
-                pages[page] = canvas.exportStrokes();
-                pageInkUsage[page] = inkUsage;
+                savePage();
                 page++;
-
-                pageCounter.innerHTML = '';
-                pageCounter.appendChild($('p. ' + (page + 1) + '/' + pageCount));
-
-                canvas.importStrokes(pages[page]);
-                inkUsage = pageInkUsage[page];
-                previewCanvas.importStrokes(pages[page]);
+                updatePageCounter()
+                loadPage();
             }   
         };
 
         upButton.onclick = function () {
             if (page - 1 >= 0) {
-                pages[page] = canvas.exportStrokes();
-                pageInkUsage[page] = inkUsage;
+                savePage();
                 page--;
-
-                pageCounter.innerHTML = '';
-                pageCounter.appendChild($('p. ' + (page + 1) + '/' + pageCount));
-
-                canvas.importStrokes(pages[page]);
-                inkUsage = pageInkUsage[page];
-                previewCanvas.importStrokes(pages[page]);
+                updatePageCounter()
+                loadPage();
             }   
         };
 
