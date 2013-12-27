@@ -1,0 +1,224 @@
+* {
+  -webkit-box-sizing: border-box; /* Android ≤ 2.3, iOS ≤ 4 */
+     -moz-box-sizing: border-box; /* Firefox 1+ */
+          box-sizing: border-box; /* Chrome, IE 8+, Opera, Safari 5.1 */
+}
+
+body {
+    font-family: sans-serif;
+}
+
+#preview-area {
+    width: 320px;
+    height: 214px;
+    background: url(res/blur.png);
+}
+.preview-note, .preview-date {
+    color: rgb(100, 100, 100);
+    text-align: center;
+    font-size: 10pt;
+}
+.preview-note {
+    padding-top: 2px;
+}
+
+#drawing-area {
+    width: 320px;
+    height: 212px;
+}
+.canvas-box {
+    width: 320px;
+    height: 176px;
+    padding: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+.canvas-frame {
+    background: url(backgrounds/green-letter.png) no-repeat;
+    width: 308px;
+    height: 168px;
+}
+.canvas {
+    display: block;
+}
+
+.ink-meter {
+    display: inline-block;
+    height: 20px;
+    width: 5px;
+    //border: 1px solid black;
+    background: url(res/ink-bg.png) no-repeat;
+    position: relative;
+    vertical-align: bottom;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.ink-meter-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    background: url(res/ink-fg.png) no-repeat;
+    background-position: bottom;
+}
+
+#tool-bar {
+    width: 320px;
+    height: 32px;
+    overflow: hidden;
+    background: url(box-shadow.png) repeat-x;
+}
+
+#save-button {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    border: 3px solid #5a8942;
+    border-top-right-radius: 5px;
+    border-left: none;
+    border-bottom: none;
+    font-size: 13pt;
+    background: #e9ffdd;
+}
+
+#colour-box {
+    border: 2px solid #aec760;
+    padding: 2px;
+    padding-bottom: 1px;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    display: inline-block;
+    background: #d6dda3;
+    width: 40px;
+    margin-left: -20px;
+    position: absolute;
+    bottom: 0;
+    left: 28%;
+    text-align: center;
+}
+
+#colour-button {
+    border: 2px solid white;
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    background-color: black;
+    margin: 0;
+}
+
+.colour-picker {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 112px;
+    height: 112px;
+    border: 2px solid #aec760;
+    border-left: 0;
+    border-bottom: 0;
+    border-radius: 4px;
+    padding: 4px;
+    background: #d6dda3;
+}
+
+.colour-wheel {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    background: url(res/colour-wheel.png) no-repeat;
+}
+
+.hidden {
+    display: none;
+}
+
+#tool-box {
+    border: 2px solid #aec760;
+    padding: 3px;
+    padding-bottom: 0;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    display: inline-block;
+    background: #d6dda3;
+    width: 84px;
+    margin-left: -42px;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    text-align: center;
+}
+
+#pencil-button, #eraser-button {
+    vertical-align: top;
+    min-width: 30px;
+    min-height: 26px;
+    border: 2px solid white;
+    border-bottom: none;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color: rgb(200, 200, 200);
+    margin: 0;
+}
+
+#pencil-button {
+    background-image: url(res/pencil.png);
+    background-color: #c1dd6b;
+    border-color: #5a8942;
+}
+
+#eraser-button {
+    background-image: url(res/eraser.png);
+}
+
+#down-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    height: 30px;
+    background: url(res/arrow-down.png) no-repeat center center rgb(240, 240, 240);
+    border: 2px solid rgb(200, 200, 200);
+    border-bottom: none;
+    border-right: none;
+    border-top-left-radius: 4px;
+    padding: 3px;
+}
+
+#up-button {
+    position: absolute;
+    right: 30px;
+    bottom: 0;
+    width: 26px;
+    height: 30px;
+    background: url(res/arrow-up.png) no-repeat center center rgb(240, 240, 240);
+    border: 2px solid rgb(200, 200, 200);
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    padding: 3px;
+}
+
+#page-count {
+    position: absolute;
+    right: 60px;
+    bottom: 0;
+}
+
+.clear-button {
+    float: left;
+}
+
+.postcard {
+    display: inline-block;
+    width: 80px;
+    height: 56px;
+    border: 3px solid blue;
+    margin-right: 20px;
+    cursor: pointer;
+    border-radius: 1px;
+}
+.postcard-selected {
+    border-color: lime;
+}
