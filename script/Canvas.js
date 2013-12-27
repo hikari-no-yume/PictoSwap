@@ -129,8 +129,10 @@
                             return;
                         }
 
+                        var beginTime = (new Date()).getTime();
                         var segment = strokes[i][j];
                         draw(segment);
+                        var endTime = (new Date()).getTime();
 
                         // Move to next segment of stroke
                         j++;
@@ -154,7 +156,7 @@
                         if (j === 0) {
                             setTimeout(nextSegment, 50);
                         } else {
-                            setTimeout(nextSegment, (newSegment.time - segment.time) / 4);
+                            setTimeout(nextSegment, ((newSegment.time - segment.time) / 4) - (beginTime - endTime));
                         }
                     }
 

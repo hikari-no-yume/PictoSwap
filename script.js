@@ -12,6 +12,8 @@
             canvas = new swapnote.Canvas(308, 168),
             previewCanvas = new swapnote.Canvas(308, 168);
 
+        context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
+
         var previewArea, previewNote;
         previewArea = $({
             parentElement: context.topScreen,
@@ -22,7 +24,7 @@
                     tagName: 'div',
                     className: 'preview-note',
                     children: [
-                        $('Press (A) to play')
+                        $('Press (A) to play, touch and hold to draw')
                     ]
                 }),
                 $({
@@ -48,7 +50,7 @@
             ]
         });
 
-        var colourButton, drawingArea, pageCounter, eraserButton, downButton, upButton;
+        var saveButton, colourButton, drawingArea, pageCounter, eraserButton, downButton, upButton;
         drawingArea = $({
             parentElement: context.bottomScreen,
             tagName: 'div',
@@ -71,7 +73,7 @@
                     tagName: 'div',
                     id: 'tool-bar',
                     children: [
-                        $({
+                        saveButton = $({
                             tagName: 'button',
                             id: 'save-button',
                             children: [
@@ -186,6 +188,10 @@
             }
         };
 
+        saveButton.onclick = function () {
+            browse(context);
+        };
+
         colourButton.onclick = function () {
             colourPicker.open(function (colour) {
                 colourButton.style.backgroundColor = colour;
@@ -242,26 +248,60 @@
                     cancelFunction();
                     cancelFunction = null;
                     previewNote.innerHTML = '';
-                    previewNote.appendChild($('Press (A) to play'));
+                    previewNote.appendChild($('Press (A) to play, touch and hold to draw'));
 
                     // Replay again (but instantly) so that preview is visible
                     previewCanvas.replay(true);
                 } else {
                     cancelFunction = previewCanvas.replay(false, function () {
                         previewNote.innerHTML = '';
-                        previewNote.appendChild($('Press (A) to play'));
+                        previewNote.appendChild($('Press (A) to play, touch and hold to draw'));
                         cancelFunction = null;
                     });
                     previewNote.innerHTML = '';
-                    previewNote.appendChild($('Press (A) to stop'));
+                    previewNote.appendChild($('Press (A) to stop, touch and hold to draw'));
                 }
             }
         });
     }
 
+    function browse(context) {
+        context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
+        $({
+            parentElement: context.topScreen,
+            tagName: 'div',
+            id: 'preview-area'
+        });
+
+        var composeButton;
+        $({
+            parentElement: context.bottomScreen,
+            tagName: 'div',
+            id: 'browse-area',
+            children: [
+                composeButton = $({
+                    tagName: 'button',
+                    id: 'compose-button',
+                    children: [
+                        $({
+                            tagName: 'img',
+                            src: 'res/compose.png'
+                        }),
+                        $('Write Letter')
+                    ]
+                })
+            ]
+        });
+
+        composeButton.onclick = function () {
+            compose(context);
+        };
+    }
+
     window.onerror = alert;
     window.onload = function () {
         var context = lib3DS.initModeDual320();
-        compose(context);
+        //compose(context);
+        browse(context);
     };
 }(window.swapnote = window.swapnote || {}));

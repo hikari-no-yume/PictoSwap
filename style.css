@@ -8,6 +8,8 @@ body {
     font-family: sans-serif;
 }
 
+/* Composer */
+
 #preview-area {
     width: 320px;
     height: 214px;
@@ -210,6 +212,14 @@ body {
     float: left;
 }
 
+/* Browser */
+
+#browse-area {
+    width: 320px;
+    height: 212px;
+    background: url(res/blur.png);
+}
+
 .postcard {
     display: inline-block;
     width: 80px;
@@ -221,4 +231,22 @@ body {
 }
 .postcard-selected {
     border-color: lime;
+}
+
+#compose-button {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    border: 3px solid #5a8942;
+    border-top-right-radius: 5px;
+    border-left: none;
+    border-bottom: none;
+    font-size: 16pt;
+    background: #e9ffdd;
+    width: 70%;
+}
+
+#compose-button img {
+    vertical-align: middle;
+    margin-right: 6px;
 }
