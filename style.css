@@ -212,6 +212,35 @@ body {
     float: left;
 }
 
+/* Interstitial */
+
+.loading-background {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.loading {
+    width: 100%;
+    height: 100%;
+    border: 3px solid #5a8942;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 14pt;
+    text-align: center;
+    padding-top: 50px;
+}
+
+.loading-text {
+    margin-bottom: 20px;
+}
+
 /* Browser */
 
 #browse-area {

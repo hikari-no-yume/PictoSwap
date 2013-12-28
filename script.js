@@ -190,8 +190,25 @@
 
         saveButton.onclick = function () {
             savePage();
-            alert(JSON.stringify(pages));
-            browse(context);
+            loading(context, 'Saving letter...');
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/upload.php');
+            
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        alert(xhr.responseText);
+                        browse(context);
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({
+                action: 'new_message',
+                pages: pages
+            }));
         };
 
         colourButton.onclick = function () {
@@ -271,6 +288,35 @@
         });
     }
 
+    // Displays loading screen
+    function loading(context, text) {
+        $({
+            parentElement: context.bottomScreen,
+            tagName: 'div',
+            className: 'loading-background',
+            children: [
+                $({
+                    tagName: 'div',
+                    className: 'loading',
+                    children: [
+                        $({
+                            tagName: 'div',
+                            className: 'loading-text',
+                            children: [
+                                $(text)
+                            ]
+                        }),
+                        $({
+                            tagName: 'img',
+                            src: 'res/spinner.gif'
+                        })
+                    ]
+                })
+            ]
+        });
+    }
+
+    // Displays letter browsing screen
     function browse(context) {
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
         $({
