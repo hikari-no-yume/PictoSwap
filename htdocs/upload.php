@@ -5,7 +5,7 @@ if ($data === FALSE) {
     die("file_get_contents failed");
 }
 $data = json_decode($data);
-if (!json_last_error()) {
+if (json_last_error() !== JSON_ERROR_NONE) {
     die("json_decode failed");
 }
 
