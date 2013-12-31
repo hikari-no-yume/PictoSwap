@@ -58,6 +58,13 @@
             // Find angle (in degrees) from centre
             angle = (Math.atan2(x - centreX, y - centreY) / (Math.PI * 2)) * 360;
 
+            while (angle < 0) {
+                angle += 360;
+            }
+            while (angle > 360) {
+                angle -= 360;
+            }
+
             return 'hsl(' + angle + ', 100%, ' + (100 * (distance / radius)) + '%)';
         }
 

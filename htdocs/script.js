@@ -6,7 +6,7 @@
         return Math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
     }
 
-    function compose(context) {
+    function compose(context, SID) {
         var inkMeter = new swapnote.InkMeter(20000, 20000),
             colourPicker = new swapnote.ColourPicker(),
             canvas = new swapnote.Canvas(308, 168),
@@ -14,7 +14,7 @@
 
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
 
-        var previewArea, previewNote;
+        var previewArea, previewNote, previewFrame;
         previewArea = $({
             parentElement: context.topScreen,
             tagName: 'div',
@@ -31,7 +31,7 @@
                     tagName: 'div',
                     className: 'canvas-box',
                     children: [
-                        $({
+                        previewFrame = $({
                             tagName: 'div',
                             className: 'canvas-frame',
                             children: [
@@ -50,7 +50,7 @@
             ]
         });
 
-        var saveButton, colourButton, drawingArea, pageCounter, eraserButton, downButton, upButton;
+        var saveButton, colourButton, drawingArea, canvasFrame, pageCounter, eraserButton, downButton, upButton;
         drawingArea = $({
             parentElement: context.bottomScreen,
             tagName: 'div',
@@ -60,7 +60,7 @@
                     tagName: 'div',
                     className: 'canvas-box',
                     children: [
-                        $({
+                        canvasFrame = $({
                             tagName: 'div',
                             className: 'canvas-frame',
                             children: [
@@ -128,7 +128,11 @@
 
         var pages = [[], [], [], []], pageInkUsage = [0, 0, 0, 0],
             page = 0, pageCount = 4, inkUsage = 0;
+        var pageBackground = 'green-letter.png';
         var drawing = false, drawColour = 'black', lastX = 0, lastY = 0;
+
+        previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
+        canvasFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
 
         canvas.element.onmousedown = function (e) {
             // Only allow drawing if we have enough ink
@@ -188,26 +192,38 @@
             }
         };
 
+        function serialiseLetter() {
+            return {
+                background: pageBackground,
+                pages: pages,
+                pageInkUsage: pageInkUsage
+            };
+        }
+
         saveButton.onclick = function () {
             savePage();
             loading(context, 'Saving letter...');
 
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/upload.php');
+            xhr.open('POST', '/api.php?' + SID);
             
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
-                        alert(xhr.responseText);
-                        browse(context);
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            loadLetters(context, SID);
+                        }
                     } else {
                         alert("Error! Request returned " + xhr.status + "!");
                     }
                 }
             };
             xhr.send(JSON.stringify({
-                action: 'new_message',
-                pages: pages
+                action: 'new_letter',
+                letter: serialiseLetter()
             }));
         };
 
@@ -317,7 +333,7 @@
     }
 
     // Displays letter browsing screen
-    function browse(context) {
+    function browse(context, letters, SID) {
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
         $({
             parentElement: context.topScreen,
@@ -346,14 +362,152 @@
         });
 
         composeButton.onclick = function () {
-            compose(context);
+            compose(context, SID);
+        };
+    }
+
+    // Makes request for letters then switches to letter browsing screen when done
+    function loadLetters(context, SID) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api.php?action=letters&' + SID);
+        
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        browse(context, data.letters, SID);
+                    }
+                } else {
+                    alert("Error! Request returned " + xhr.status + "!");
+                }
+            }
+        };
+        xhr.send();
+
+        loading(context, 'Loading letters...');
+    }
+
+    // Displays login screen
+    function login(context) {
+        context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
+        $({
+            parentElement: context.topScreen,
+            tagName: 'div',
+            id: 'preview-area',
+            children: [
+                $({
+                    tagName: 'h1',
+                    children: [
+                        $('PictoSwap')
+                    ]
+                }),
+                $({
+                    tagName: 'p',
+                    children: [
+                        $('With PictoSwap, you can draw messages and send them to your friends on other 3DS systems!')
+                    ]
+                })
+            ]
+        });
+
+        var username, password, loginBtn, registerBtn;
+
+        $({
+            parentElement: context.bottomScreen,
+            tagName: 'div',
+            id: 'login-area',
+            children: [
+                username = $({
+                    tagName: 'input',
+                    type: 'text',
+                    placeholder: 'username',
+                    id: 'username-input'
+                }),
+                password = $({
+                    tagName: 'input',
+                    type: 'password',
+                    placeholder: 'password',
+                    id: 'password-input'
+                }),
+                loginBtn = $({
+                    tagName: 'button',
+                    id: 'login-button',
+                    children: [
+                        $('Log in')
+                    ]
+                }),
+                registerBtn = $({
+                    tagName: 'button',
+                    id: 'register-button',
+                    children: [
+                        $('Register')
+                    ]
+                })
+            ]
+        });
+
+        registerBtn.onclick = function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api.php');
+            
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert("Registration successful. Now try to log in.");
+                        }
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({
+                action: 'register',
+                username: username.value,
+                password: password.value
+            }));
+        };
+
+        loginBtn.onclick = function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api.php');
+            
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            loadLetters(context, data.SID);
+                        }
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({
+                action: 'login',
+                username: username.value,
+                password: password.value
+            }));
         };
     }
 
     window.onerror = alert;
     window.onload = function () {
         var context = lib3DS.initModeDual320();
-        //compose(context);
-        browse(context);
+        var data = swapnote.userData;
+        if (data.logged_in) {
+            loadLetters(context, data.SID);
+        } else {
+            login(context);
+        }
     };
 }(window.swapnote = window.swapnote || {}));

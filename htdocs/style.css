@@ -36,7 +36,7 @@ body {
     padding-bottom: 4px;
 }
 .canvas-frame {
-    background: url(backgrounds/green-letter.png) no-repeat;
+    background-repeat: no-repeat;
     width: 308px;
     height: 168px;
 }
@@ -278,4 +278,44 @@ body {
 #compose-button img {
     vertical-align: middle;
     margin-right: 6px;
+}
+
+/* Login */
+
+#login-area {
+    width: 320px;
+    height: 212px;
+    background: url(res/blur.png);
+    padding: 10px;
+}
+
+h1 {
+    font-size: 14pt;
+    text-align: center;
+    margin-top: 0;
+    padding-top: 20px;
+}
+
+p {
+    text-align: center;
+}
+
+#username-input, #password-input {
+    display: block;
+    width: 240px;
+    margin: 0 auto 20px auto;
+    border: 3px solid #5a8942;
+    border-radius: 5px;
+    font-size: 14pt;
+    background: white;
+}
+
+#login-button, #register-button {
+    display: block;
+    width: 240px;
+    margin: 0 auto 10px auto;
+    border: 3px solid #5a8942;
+    border-radius: 5px;
+    font-size: 16pt;
+    background: #e9ffdd;
 }
