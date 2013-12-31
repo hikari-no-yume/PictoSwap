@@ -1,6 +1,6 @@
-(function (swapnote) {
+(function (PictoSwap) {
     // Canvas class
-    swapnote.Canvas = function (width, height) {
+    PictoSwap.Canvas = function (width, height) {
         var cv = $({
             tagName: 'canvas',
             className: 'canvas',
@@ -185,4 +185,4 @@
             element: cv
         };
     };
-}(window.swapnote = window.swapnote || {}));
+}(window.PictoSwap = window.PictoSwap || {}));

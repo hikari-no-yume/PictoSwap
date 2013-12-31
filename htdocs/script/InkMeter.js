@@ -1,6 +1,6 @@
-(function (swapnote) {
+(function (PictoSwap) {
     // InkMeter class
-    swapnote.InkMeter = function (ink, maxInk) {
+    PictoSwap.InkMeter = function (ink, maxInk) {
         var meterElement, barElement;
         meterElement = $({
             tagName: 'div',
@@ -50,4 +50,4 @@
             subtractInk: subtractInk
         };
     };
-}(window.swapnote = window.swapnote || {}));
+}(window.PictoSwap = window.PictoSwap || {}));

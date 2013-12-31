@@ -1,11 +1,11 @@
-(function (swapnote) {
+(function (PictoSwap) {
     // Calculates a distance
     function calcDistance(x1, y1, x2, y2) {
         return Math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
     }
 
     // ColourPicker class
-    swapnote.ColourPicker = function () {
+    PictoSwap.ColourPicker = function () {
         var element, colourWheel;
         element = $({
             tagName: 'div',
@@ -104,4 +104,4 @@
             element: element
         };
     };
-}(window.swapnote = window.swapnote || {}));
+}(window.PictoSwap = window.PictoSwap || {}));

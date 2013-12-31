@@ -1,4 +1,4 @@
-(function (swapnote) {
+(function (PictoSwap) {
     'use strict';
 
     // Calculates a distance
@@ -7,10 +7,10 @@
     }
 
     function compose(context, SID) {
-        var inkMeter = new swapnote.InkMeter(20000, 20000),
-            colourPicker = new swapnote.ColourPicker(),
-            canvas = new swapnote.Canvas(308, 168),
-            previewCanvas = new swapnote.Canvas(308, 168);
+        var inkMeter = new PictoSwap.InkMeter(20000, 20000),
+            colourPicker = new PictoSwap.ColourPicker(),
+            canvas = new PictoSwap.Canvas(308, 168),
+            previewCanvas = new PictoSwap.Canvas(308, 168);
 
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
 
@@ -503,11 +503,11 @@
     window.onerror = alert;
     window.onload = function () {
         var context = lib3DS.initModeDual320();
-        var data = swapnote.userData;
+        var data = PictoSwap.userData;
         if (data.logged_in) {
             loadLetters(context, data.SID);
         } else {
             login(context);
         }
     };
-}(window.swapnote = window.swapnote || {}));
+}(window.PictoSwap = window.PictoSwap || {}));
