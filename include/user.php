@@ -2,6 +2,7 @@
 
 require_once 'db.php';
 require_once 'password_compat.php';
+require_once 'graphics.php';
 
 // Initialises session etc.
 function user_init() {
@@ -12,6 +13,16 @@ function user_init() {
     }
     session_start();
     $SID_CONSTANT = session_name() . '=' . session_id();
+}
+
+// Checks if user is logged in
+function user_logged_in() {
+    return (isset($_SESSION['logged_in']) && $_SESSION['logged_in']);
+}
+
+// Gets user ID of logged in user
+function user_id() {
+    return $_SESSION['user_id'];
 }
 
 // Finds out if a user with the given username exists
@@ -96,7 +107,29 @@ function user_login($username, $password) {
     return TRUE;
 }
 
-// Checks if user is logged in
-function user_logged_in() {
-    return (isset($_SESSION['logged_in']) && $_SESSION['logged_in']);
+// Adds a new letter for a user
+// Return value of TRUE indicated success, otherwise string error returned
+function user_new_letter($user_id, $letter) {
+    $image = renderLetterPreview($letter);
+
+    $db = connectDB();
+    $db->beginTransaction();
+    $stmt = $db->prepare('
+        INSERT INTO
+            letters(user_id, timestamp, content)
+        VALUES
+            (:user_id, datetime(\'now\'), :content)
+        ;
+    ');
+    $stmt->execute([
+        ':user_id' => $user_id,
+        ':content' => json_encode($letter)
+    ]);
+    $letter_id = $db->lastInsertId();
+    $db->commit();
+
+    ImagePNG($image, 'previews/' . $letter_id . '.png');
+    ImageDestroy($image);
+
+    return TRUE;
 }

@@ -16,8 +16,8 @@ user_init();
 <script src="script/ColourPicker.js"></script>
 <script src=script.js></script>
 <script>
-window.swapnote = window.swapnote || {};
-window.swapnote.userData = <?=json_encode([
+window.PictoSwap = window.PictoSwap || {};
+window.PictoSwap.userData = <?=json_encode([
     'logged_in' => user_logged_in(),
     'SID' => $SID_CONSTANT
 ])?>;

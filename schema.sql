@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS letters (
     letter_id       INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id         INTEGER NOT NULL,
+    timestamp       DATETIME NOT NULL,
     content         STRING NOT NULL,
-    preview         STRING NOT NULL,
     CONSTRAINT letters_user_id_to_users_user_id FOREIGN KEY (user_id) REFERENCES users(user_id)
 );

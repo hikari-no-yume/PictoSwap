@@ -1,6 +1,5 @@
 <?php
 
-require_once '../include/graphics.php';
 require_once '../include/user.php';
 
 user_init();
@@ -28,13 +27,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 exit;
             }
-            $letter = $data->letter;
-            $image = renderLetterPreview($letter);
-            ImagePNG($image, 'preview.png');
-            ImageDestroy($image);
-            respond([
-                'error' => null
-            ]);
+            $user_id = user_id();
+            $error = user_new_letter($user_id, $data->letter);
+            if ($error === TRUE) {
+                respond([
+                    'error' => null
+                ]);
+            } else {
+                respond([
+                    'error' => $error
+                ]);
+            }
         break;
         case 'register':
             $error = user_register($data->username, $data->password);
