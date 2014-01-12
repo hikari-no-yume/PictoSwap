@@ -80,8 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 exit;
             }
+            $letters = user_get_received_letters(user_id());
             respond([
-                'letters' => [],
+                'letters' => $letters,
                 'error' => null
             ]);
         break;

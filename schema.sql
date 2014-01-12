@@ -12,3 +12,13 @@ CREATE TABLE IF NOT EXISTS letters (
     content         STRING NOT NULL,
     CONSTRAINT letters_user_id_to_users_user_id FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS letter_recipients (
+    user_id         INTEGER NOT NULL,
+    letter_id       INTEGER NOT NULL,
+    timestamp       DATETIME NOT NULL,
+    read            BOOLEAN NOT NULL,
+    PRIMARY KEY(user_id, letter_id),
+    CONSTRAINT letter_recipients_user_id_to_users_user_id FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT letter_recipients_letter_id_to_letters_letter_id FOREIGN KEY (letter_id) REFERENCES letters(letter_id)
+);

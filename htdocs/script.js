@@ -341,12 +341,24 @@
             id: 'preview-area'
         });
 
-        var composeButton;
+        var composeButton, letterCarousel, leftButton, rightButton;
         $({
             parentElement: context.bottomScreen,
             tagName: 'div',
             id: 'browse-area',
             children: [
+                letterCarousel = $({
+                    tagName: 'div',
+                    id: 'letter-carousel'
+                }),
+                leftButton = $({
+                    tagName: 'button',
+                    id: 'carousel-left-button'
+                }),
+                rightButton = $({
+                    tagName: 'button',
+                    id: 'carousel-right-button'
+                }),
                 composeButton = $({
                     tagName: 'button',
                     id: 'compose-button',
@@ -356,14 +368,58 @@
                             src: 'res/compose.png'
                         }),
                         $('Write Letter')
-                    ]
+                    ],
                 })
             ]
         });
 
+        var LETTER_GAP = 180, letterElements = [], selected = 0, x = 0;
+        letters.forEach(function (letter) {
+            var elem = $({
+                tagName: 'img',
+                src: 'previews/' + letter.letter_id + '-0.png',
+                className: 'letter-preview',
+                parentElement: letterCarousel,
+                style: {
+                    left: x + 'px'
+                }
+            });
+            if (letter.own) {
+                elem.className += ' letter-preview-own';
+            }
+            letterElements.push(elem);
+            x += LETTER_GAP;
+        });
+        letterCarousel.style.width = x + 'px';
+        
+        function updateCarousel(newSelected) {
+            selected = newSelected;
+            letterCarousel.style.marginLeft = selected * -LETTER_GAP + 'px';
+        }
+
         composeButton.onclick = function () {
             compose(context, SID);
         };
+
+        var goLeft = leftButton.onclick = function () {
+            if (selected - 1 >= 0) {
+                updateCarousel(selected - 1);
+            }
+        }, goRight = rightButton.onclick = function () {
+            if (selected + 1 < letters.length) {
+                updateCarousel(selected + 1);
+            }
+        };
+
+        lib3DS.handleButtons(function (key) {
+            if (key === 'left') {
+                goLeft();
+            } else if (key === 'right') {
+                goRight();
+            }
+        });
+
+        updateCarousel(0);
     }
 
     // Makes request for letters then switches to letter browsing screen when done

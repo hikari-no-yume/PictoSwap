@@ -52,7 +52,7 @@ function user_register($username, $password) {
     }
 
     if (!preg_match(VALID_USERNAME_REGEX, $username)) {
-        return "Username can only be 3-18 characters in length, composed only of letters, numbers and underscores";
+        return "Username can only be 3-18 characters in length, composed only of lowercase letters, numbers and underscores";
     }
 
     $db = connectDB();
@@ -110,7 +110,7 @@ function user_login($username, $password) {
 // Adds a new letter for a user
 // Return value of TRUE indicated success, otherwise string error returned
 function user_new_letter($user_id, $letter) {
-    $image = renderLetterPreview($letter);
+    $images = renderLetterPreviews($letter);
 
     $db = connectDB();
     $db->beginTransaction();
@@ -126,10 +126,58 @@ function user_new_letter($user_id, $letter) {
         ':content' => json_encode($letter)
     ]);
     $letter_id = $db->lastInsertId();
+    $stmt = $db->prepare('
+        INSERT INTO
+            letter_recipients(user_id, letter_id, read, timestamp)
+        VALUES
+            (:user_id, :letter_id, 1, datetime(\'now\'))
+        ;
+    ');
+    $stmt->execute([
+        ':user_id' => $user_id,
+        ':letter_id' => $letter_id
+    ]);
     $db->commit();
 
-    ImagePNG($image, 'previews/' . $letter_id . '.png');
-    ImageDestroy($image);
-
+    for ($i = 0; $i < count($images); $i++) {
+        ImagePNG($images[$i], 'previews/' . $letter_id . '-' . $i . '.png');
+        ImageDestroy($images[$i]);
+    }
     return TRUE;
+}
+
+// Gets array of user's letters, most recent first
+function user_get_received_letters($user_id) {
+    $db = connectDB();
+    $stmt = $db->prepare('
+        SELECT
+            letters.user_id AS from_id,
+            users.username AS from_username,
+            letters.letter_id AS letter_id,
+            letter_recipients.timestamp AS timestamp,
+            letter_recipients.read AS read
+        FROM
+            letter_recipients
+        LEFT JOIN
+            letters
+        ON
+            letter_recipients.letter_id = letters.letter_id
+        LEFT JOIN
+            users
+        ON
+            letters.user_id = users.user_id
+        WHERE
+            letter_recipients.user_id = :user_id
+        ORDER BY
+            timestamp DESC
+        ;
+    ');
+    $stmt->execute([
+        ':user_id' => $user_id
+    ]);
+    $letters = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($letters as &$letter) {
+        $letter['own'] = ((int)$letter['from_id'] === (int)user_id());
+    }
+    return $letters;
 }

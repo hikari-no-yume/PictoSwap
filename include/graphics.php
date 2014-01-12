@@ -45,8 +45,7 @@ function hslToRgb( $h, $s, $l ){
     return array( floor( $r ), floor( $g ), floor( $b ) );
 }
 
-function CSSColourToGd($image, $colour) {
-    static $colourCache = [];
+function CSSColourToGd(&$colourCache, $image, $colour) {
     if (array_key_exists($colour, $colourCache)) {
         return $colourCache[$colour];
     }
@@ -69,26 +68,29 @@ function CSSColourToGd($image, $colour) {
     }
 }
 
-function renderLetterPreview($letter) {
+function renderLetterPreviews($letter) {
     $pageImages = [];
 
     $background = imageCreateFromPNG('backgrounds/' . $letter->background);
-    $page = $letter->pages[0];
-    $image = imageCreateTrueColor(PAGE_WIDTH, PAGE_HEIGHT);
-    imageCopy($image, $background, 0, 0, 0, 0, PAGE_WIDTH, PAGE_HEIGHT);
-    foreach ($page as $stroke) {
-        foreach ($stroke as $segment) {
-            $colour = CSSColourToGd($image, $segment->colour);
-            switch ($segment->type) {
-                case 'dot':
-                    imageFilledRectangle($image, $segment->x - 1.5, $segment->y - 1.5, $segment->x + 1.5, $segment->y + 1.5, $colour);
-                break;
-                case 'line':
-                    imageSetThickness($image, 3);
-                    imageLine($image, $segment->from_x, $segment->from_y, $segment->x, $segment->y, $colour);
-                break;
+    foreach ($letter->pages as $page) {
+        $image = imageCreateTrueColor(PAGE_WIDTH, PAGE_HEIGHT);
+        $colourCache = [];
+        imageCopy($image, $background, 0, 0, 0, 0, PAGE_WIDTH, PAGE_HEIGHT);
+        foreach ($page as $stroke) {
+            foreach ($stroke as $segment) {
+                $colour = CSSColourToGd($colourCache, $image, $segment->colour);
+                switch ($segment->type) {
+                    case 'dot':
+                        imageFilledRectangle($image, $segment->x - 1.5, $segment->y - 1.5, $segment->x + 1.5, $segment->y + 1.5, $colour);
+                    break;
+                    case 'line':
+                        imageSetThickness($image, 3);
+                        imageLine($image, $segment->from_x, $segment->from_y, $segment->x, $segment->y, $colour);
+                    break;
+                }
             }
         }
+        $pageImages[] = $image;
     }
-    return $image;
+    return $pageImages;
 }
