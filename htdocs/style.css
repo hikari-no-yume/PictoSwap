@@ -280,6 +280,72 @@ body {
     margin-right: 6px;
 }
 
+#friends-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    border: 3px solid #5a8942;
+    border-top-left-radius: 5px;
+    border-right: none;
+    border-bottom: none;
+    font-size: 16pt;
+    background: #e9ffdd;
+    width: 15%;
+}
+
+#friends-button img {
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+#friend-requests {
+    position: absolute;
+    right: 0;
+    bottom: 36px;
+    width: 200px;
+    height: 160px;
+    border: 3px solid #5a8942;
+    border-right: 0;
+    border-radius: 4px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    padding: 4px;
+    background: #d6dda3;
+    overflow-y: scroll;
+}
+
+#friend-requests h2 {
+    margin: 2px;
+    font-size: 14pt;
+    font-family: sans-serif;
+}
+
+#friend-request-list {
+    padding-left: 20px;
+    list-style-type: square;
+}
+
+#add-friend-box {
+    border: 2px solid #5a8942;
+    border-radius: 4px;
+    font-size: 14pt;
+    background: white;
+    width: 70%;
+    margin-right: 5px;
+}
+
+#add-friend-button {
+    border: 2px solid #5a8942;
+    border-radius: 4px;
+    font-size: 14pt;
+    background: #e9ffdd;
+}
+
+#friends-button img {
+    vertical-align: bottom;
+    margin-right: 6px;
+}
+
 #letter-carousel {
     position: absolute;
     top: 50px;

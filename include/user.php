@@ -223,3 +223,108 @@ function user_get_received_letter($user_id, $letter_id) {
         return $letter;
     }
 }
+
+// Sends a friend request
+// Return value of TRUE indicates success, otherwise string error returned
+function user_add_friend($user_id, $friend_username) {
+    $db = connectDB();
+    
+    // Look up user
+    $stmt = $db->prepare('
+        SELECT
+            user_id
+        FROM
+            users
+        WHERE
+            username = :username
+        LIMIT
+            1
+        ;
+    ');
+    $stmt->execute([':username' => $friend_username]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (empty($rows)) {
+        return "No such user.";
+    }
+    
+    $friend_user_id = $rows[0]['user_id'];
+    
+    if ($friend_user_id == $user_id) {
+        return "You cannot send a friend request to yourself.";
+    }
+    
+    // Check they're not already friends
+    $stmt = $db->prepare('
+        SELECT
+            user_id_1, user_id_2, provisional
+        FROM
+            friendships
+        WHERE
+            (user_id_1 = :user_id_1 AND user_id_2 = :user_id_2)
+            OR (user_id_1 = :user_id_2 AND user_id_2 = :user_id_1)
+        LIMIT
+            1
+        ;
+    ');
+    $stmt->execute([
+        ':user_id_1' => $user_id,
+        ':user_id_2' => $friend_user_id
+    ]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($rows)) {
+        $row = $rows[0];
+        if ($row['provisional']) {
+            if ($row['user_id_1'] == $user_id) {
+                return "You already sent a friend request to that user.";
+            } else {
+                return "That user already sent you a friend request.";
+            }
+        } else {
+            return "You are already friends with that user.";
+        }
+    }
+    
+    // Actually send the request
+    $db->beginTransaction();
+    $stmt = $db->prepare('
+        INSERT INTO
+            friendships(user_id_1, user_id_2, timestamp, provisional)
+        VALUES
+            (:user_id_1, :user_id_2, datetime(\'now\'), 1)
+        ;
+    ');
+    $stmt->execute([
+        ':user_id_1' => $user_id,
+        ':user_id_2' => $friend_user_id
+    ]);
+    $db->commit();
+
+    return TRUE;
+}
+
+// Gets friend requests as an array
+function user_get_friend_requests($user_id) {
+    $db = connectDB();
+    $stmt = $db->prepare('
+        SELECT
+            friendships.user_id_1 AS user_id,
+            users.username AS username
+        FROM
+            friendships
+        LEFT JOIN
+            users
+        ON
+            friendships.user_id_1 = users.user_id
+        WHERE
+            friendships.user_id_2 = :user_id_2
+            AND friendships.provisional = 1
+        ORDER BY
+            friendships.timestamp DESC
+        ;
+    ');
+    $stmt->execute([
+        ':user_id_2' => $user_id
+    ]);
+    $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $requests;    
+}

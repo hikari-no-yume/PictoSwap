@@ -410,6 +410,111 @@
         xhr.send();
     }
 
+    // Makes friend requests popup
+    function makeFriendRequests(SID) {
+        var friendRequests, friendRequestList, addFriendBox, addFriendButton;
+        friendRequests = $({
+            tagName: 'div',
+            id: 'friend-requests',
+            className: 'hidden',
+            children: [
+                $({
+                    tagName: 'h2',
+                    children: [
+                        $('Friend requests')
+                    ]
+                }),
+                friendRequestList = $({
+                    tagName: 'ul',
+                    id: 'friend-request-list',
+                    children: [
+                        $({
+                            tagName: 'img',
+                            src: 'res/spinner.gif'
+                        })
+                    ]
+                }),
+                addFriendBox = $({
+                    tagName: 'input',
+                    type: 'text',
+                    id: 'add-friend-box',
+                    placeholder: 'username'
+                }),
+                addFriendButton = $({
+                    tagName: 'button',
+                    id: 'add-friend-button',
+                    children: [
+                        $({
+                            tagName: 'img',
+                            src: 'res/friend-add.png'
+                        })
+                    ]
+                }),
+            ]
+        });
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api.php?action=get_friend_requests&' + SID);
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        if (data.requests.length === 0) {
+                            friendRequestList.innerHTML = 'You have not received any requests';
+                        } else {
+                            friendRequestList.innerHTML = '';
+                            data.requests.forEach(function (request) {
+                                $({
+                                    tagName: 'li',
+                                    parentElement: friendRequestList,
+                                    children: [
+                                        $(request.username)
+                                    ]
+                                });
+                            })
+                        }
+                    }
+                } else {
+                    alert("Error! Request returned " + xhr.status + "!");
+                }
+            }
+        };
+        
+        xhr.send();
+
+        addFriendButton.onclick = function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api.php?' + SID);
+    
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert("Sent friend request!");
+                            addFriendBox.value = '';
+                        }
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
+                    }
+                }
+            };
+            
+            xhr.send(JSON.stringify({
+                action: 'add_friend',
+                username: addFriendBox.value
+            }));
+        };
+        
+        return friendRequests;
+    }
+
     // Displays letter browsing screen
     function browse(context, letters, SID) {
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
@@ -419,7 +524,9 @@
             id: 'preview-area'
         });
 
-        var composeButton, letterCarousel, leftButton, rightButton;
+        var friendRequests = makeFriendRequests(SID);
+
+        var composeButton, friendsButton, letterCarousel, leftButton, rightButton;
         $({
             parentElement: context.bottomScreen,
             tagName: 'div',
@@ -446,8 +553,19 @@
                             src: 'res/compose.png'
                         }),
                         $('Write Letter')
-                    ],
-                })
+                    ]
+                }),
+                friendsButton = $({
+                    tagName: 'button',
+                    id: 'friends-button',
+                    children: [
+                        $({
+                            tagName: 'img',
+                            src: 'res/friends.png'
+                        })
+                    ]
+                }),
+                friendRequests 
             ]
         });
 
@@ -481,6 +599,14 @@
 
         composeButton.onclick = function () {
             compose(context, SID);
+        };
+        
+        friendsButton.onclick = function () {
+            if (friendRequests.className === 'hidden') {
+                friendRequests.className = '';
+            } else {
+                friendRequests.className = 'hidden';
+            }
         };
 
         var goLeft = leftButton.onclick = function () {

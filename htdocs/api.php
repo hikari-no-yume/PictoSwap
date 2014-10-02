@@ -39,6 +39,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         break;
+        case 'add_friend':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $user_id = user_id();
+            $error = user_add_friend($user_id, $data->username);
+            if ($error === TRUE) {
+                respond([
+                    'error' => null
+                ]);
+            } else {
+                respond([
+                    'error' => $error
+                ]);
+            }
+        break;
         case 'register':
             $error = user_register($data->username, $data->password);
             if ($error === TRUE) {
@@ -106,9 +125,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         break;
+        case 'get_friend_requests':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $requests = user_get_friend_requests(user_id());
+            respond([
+                'requests' => $requests,
+                'error' => null
+            ]);
+        break;
         default:
             respond([
-                'error' => "Unknown GET action: '" . $data->action . "'"
+                'error' => "Unknown GET action: '" . $_GET['action'] . "'"
             ]);
         break;
     }

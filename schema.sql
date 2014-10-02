@@ -22,3 +22,13 @@ CREATE TABLE IF NOT EXISTS letter_recipients (
     CONSTRAINT letter_recipients_user_id_to_users_user_id FOREIGN KEY (user_id) REFERENCES users(user_id),
     CONSTRAINT letter_recipients_letter_id_to_letters_letter_id FOREIGN KEY (letter_id) REFERENCES letters(letter_id)
 );
+
+CREATE TABLE IF NOT EXISTS friendships (
+    user_id_1       INTEGER NOT NULL,
+    user_id_2       INTEGER NOT NULL,
+    timestamp       DATETIME NOT NULL,
+    provisional     BOOLEAN NOT NULL,
+    PRIMARY KEY(user_id_1, user_id_2),
+    CONSTRAINT friendships_user_id_1_to_users_user_id FOREIGN KEY (user_id_1) REFERENCES users(user_id),
+    CONSTRAINT friendships_user_id_2_to_users_user_id FOREIGN KEY (user_id_2) REFERENCES users(user_id)
+);
