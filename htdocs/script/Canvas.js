@@ -71,11 +71,13 @@
         }
 
         // Imports stroke list
-        function importStrokes(newStrokes) {
+        function importStrokes(newStrokes, redraw) {
             strokes = newStrokes;
 
-            // Redraw with new stroke set
-            replay(true);
+            if (redraw) {
+                // Redraw with new stroke set
+                replay(true);
+            }
         };
 
         // Adds a line to the current stroke and draws it
@@ -145,7 +147,9 @@
 
                         // Reached end of strokes, we're done here
                         if (i >= strokes.length) {
-                            callback();
+                            if (callback) {
+		                         callback();
+                            }
                             return;
                         }
 
@@ -156,7 +160,8 @@
                         if (j === 0) {
                             setTimeout(nextSegment, 50);
                         } else {
-                            setTimeout(nextSegment, ((newSegment.time - segment.time) / 4) - (beginTime - endTime));
+                            //setTimeout(nextSegment, ((newSegment.time - segment.time) / 4) - (beginTime - endTime));
+                            setTimeout(nextSegment, 1);
                         }
                     }
 
@@ -167,7 +172,9 @@
                         stop = true;
                     };
                 } else {
-                    callback();
+                    if (callback) {
+                        callback();
+					}
                     return function () {};
                 }
             }

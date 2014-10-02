@@ -181,3 +181,45 @@ function user_get_received_letters($user_id) {
     }
     return $letters;
 }
+
+// Gets a letter received by a user
+function user_get_received_letter($user_id, $letter_id) {
+    $db = connectDB();
+    $stmt = $db->prepare('
+        SELECT
+            letters.user_id AS from_id,
+            users.username AS from_username,
+            letters.letter_id AS letter_id,
+            letter_recipients.timestamp AS timestamp,
+            letter_recipients.read AS read,
+            letters.content AS content
+        FROM
+            letter_recipients
+        LEFT JOIN
+            letters
+        ON
+            letter_recipients.letter_id = letters.letter_id
+        LEFT JOIN
+            users
+        ON
+            letters.user_id = users.user_id
+        WHERE
+            letter_recipients.user_id = :user_id
+            AND letters.letter_id = :letter_id
+        ORDER BY
+            timestamp DESC
+        ;
+    ');
+    $stmt->execute([
+        ':user_id' => $user_id,
+        ':letter_id' => $letter_id
+    ]);
+    $letter = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($letter === null) {
+        return null;
+    } else {
+        $letter['own'] = ((int)$letter['from_id'] === (int)user_id());
+        $letter['content'] = json_decode($letter['content']);
+        return $letter;
+    }
+}

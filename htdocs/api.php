@@ -86,6 +86,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'error' => null
             ]);
         break;
+        case 'letter':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $letterID = $_GET['id'];
+            $letter = user_get_received_letter(user_id(), $letterID);
+            if ($letter === null) {
+                respond([
+                    'error' => 'No such letter'
+                ]);
+            } else {
+                respond([
+                    'letter' => $letter,
+                    'error' => null
+                ]);
+            }
+        break;
         default:
             respond([
                 'error' => "Unknown GET action: '" . $data->action . "'"

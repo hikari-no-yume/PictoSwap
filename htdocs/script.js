@@ -251,9 +251,9 @@
         }
 
         function loadPage() {
-            canvas.importStrokes(pages[page]);
+            canvas.importStrokes(pages[page], true);
             inkUsage = pageInkUsage[page];
-            previewCanvas.importStrokes(pages[page]);
+            previewCanvas.importStrokes(pages[page], true);
         }
 
         function updatePageCounter() {
@@ -332,6 +332,77 @@
         });
     }
 
+    // Views letter
+    function viewLetter(context, letter) {
+        var content = letter.content;
+
+        var previewCanvas = new PictoSwap.Canvas(308, 168);
+        var previewArea, previewNote, previewFrame;
+        context.topScreen.innerHTML = '';
+        previewArea = $({
+            parentElement: context.topScreen,
+            tagName: 'div',
+            id: 'preview-area',
+            children: [
+                previewNote = $({
+                    tagName: 'div',
+                    className: 'preview-note',
+                    children: [
+                        $('Press (A) to stop')
+                    ]
+                }),
+                $({
+                    tagName: 'div',
+                    className: 'canvas-box',
+                    children: [
+                        previewFrame = $({
+                            tagName: 'div',
+                            className: 'canvas-frame',
+                            style: {
+                                backgroundImage: 'url(backgrounds/' + content.background + ')'
+                            },
+                            children: [
+                                previewCanvas.element
+                            ]
+                        })
+                    ]
+                }),
+                $({
+                    tagName: 'div',
+                    className: 'preview-date',
+                    children: [
+                        $(letter.timestamp)
+                    ]
+                })
+            ]
+        });
+
+        previewCanvas.importStrokes(content.pages[0]);
+        previewCanvas.replay(false);
+    }
+
+    // Loads letter for letter view screen
+    function loadLetter(context, letterID, SID) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api.php?action=letter&id=' + letterID + '&' + SID);
+        
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        viewLetter(context, data.letter);
+                    }
+                } else {
+                    alert("Error! Request returned " + xhr.status + "!");
+                }
+            }
+        };
+        xhr.send();
+    }
+
     // Displays letter browsing screen
     function browse(context, letters, SID) {
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
@@ -374,7 +445,7 @@
         });
 
         var LETTER_GAP = 180, letterElements = [], selected = 0, x = 0;
-        letters.forEach(function (letter) {
+        letters.forEach(function (letter, i) {
             var elem = $({
                 tagName: 'img',
                 src: 'previews/' + letter.letter_id + '-0.png',
@@ -387,6 +458,10 @@
             if (letter.own) {
                 elem.className += ' letter-preview-own';
             }
+            elem.onclick = function () {
+                updateCarousel(i);
+                loadLetter(context, letter.letter_id, SID);
+            };
             letterElements.push(elem);
             x += LETTER_GAP;
         });
@@ -416,6 +491,8 @@
                 goLeft();
             } else if (key === 'right') {
                 goRight();
+            } else if (key === 'A') {
+                letterElements[selected].onclick();
             }
         });
 
