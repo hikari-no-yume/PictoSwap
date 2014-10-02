@@ -149,8 +149,11 @@
             previewCanvas.beginStroke();
 
             // Draw dot
-            canvas.addDot(drawColour, e.layerX, e.layerY);
-            previewCanvas.addDot(drawColour, e.layerX, e.layerY);
+            // We cache x and y to avoid bizzare browser bugs
+            // Don't ask me why, but the second time you read e.layerX, it becomes zero!
+            var x = e.layerX, y = e.layerY;
+            canvas.addDot(drawColour, x, y);
+            previewCanvas.addDot(drawColour, x, y);
 
             // Store the position at present so that we know where next
             // segment will start
@@ -158,11 +161,15 @@
             lastY = e.layerY;
         };
         var onMove = canvas.element.onmousemove = function (e) {
+            // We cache x and y to avoid bizzare browser bugs
+            // Don't ask me why, but the second time you read e.layerX, it becomes zero!
+            var x = e.layerX, y = e.layerY;
+            
             // Prevent mouse moving causing drawing on desktop
             // (Obviously, "mousemove" can't fire when not dragging on 3DS)
-            if (drawing && (lastX !== e.layerX || lastY !== e.layerY)) {
+            if (drawing && (lastX !== x || lastY !== y)) {
                 // The length of this segment will be subtracted from our "ink"
-                var inkUsed = calcDistance(lastX, lastY, e.layerX, e.layerY);
+                var inkUsed = calcDistance(lastX, lastY, x, y);
 
                 // Only allow drawing if we have enough ink
                 if (!inkMeter.subtractInk(inkUsed)) {
@@ -173,12 +180,12 @@
                 inkUsage += inkUsed;
 
                 // Draw line
-                canvas.addLine(drawColour, lastX, lastY, e.layerX, e.layerY);
-                previewCanvas.addLine(drawColour, lastX, lastY, e.layerX, e.layerY);
+                canvas.addLine(drawColour, lastX, lastY, x, y);
+                previewCanvas.addLine(drawColour, lastX, lastY, x, y);
             }
 
-            lastX = e.layerX;
-            lastY = e.layerY;
+            lastX = x;
+            lastY = y;
         };
         canvas.element.onmouseup = function (e) {
             if (drawing) {

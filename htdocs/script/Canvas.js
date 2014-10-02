@@ -148,7 +148,7 @@
                         // Reached end of strokes, we're done here
                         if (i >= strokes.length) {
                             if (callback) {
-		                         callback();
+                                 callback();
                             }
                             return;
                         }
@@ -174,7 +174,7 @@
                 } else {
                     if (callback) {
                         callback();
-					}
+                    }
                     return function () {};
                 }
             }
