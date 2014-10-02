@@ -453,38 +453,71 @@
             ]
         });
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api.php?action=get_friend_requests&' + SID);
+        (function refreshFriendRequests() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api.php?action=get_friend_requests&' + SID);
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        if (data.requests.length === 0) {
-                            friendRequestList.innerHTML = 'You have not received any requests';
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
                         } else {
-                            friendRequestList.innerHTML = '';
-                            data.requests.forEach(function (request) {
-                                $({
-                                    tagName: 'li',
-                                    parentElement: friendRequestList,
-                                    children: [
-                                        $(request.username)
-                                    ]
-                                });
-                            })
+                            if (data.requests.length === 0) {
+                                friendRequestList.innerHTML = 'You have not received any requests';
+                            } else {
+                                friendRequestList.innerHTML = '';
+                                data.requests.forEach(function (request) {
+                                    var friendRequestAccept, friendRequestDeny;
+                                    $({
+                                        tagName: 'li',
+                                        parentElement: friendRequestList,
+                                        children: [
+                                            $(request.username),
+                                            friendRequestAccept = $({
+                                                tagName: 'button',
+                                                className: 'friend-request-accept'
+                                            }),
+                                            friendRequestDeny = $({
+                                                tagName: 'button',
+                                                className: 'friend-request-deny'
+                                            })
+                                        ]
+                                    });
+                                    friendRequestAccept.onclick = friendRequestDeny.onclick = function () {
+                                        var mode = (this === friendRequestAccept) ? 'accept' : 'deny';
+
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.open('POST', '/api.php?' + SID);
+
+                                        xhr.onreadystatechange = function () {
+                                            var data = JSON.parse(xhr.responseText);
+                                            if (data.error) {
+                                                alert(data.error);
+                                            } else {
+                                                alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
+                                                refreshFriendRequests();
+                                            }
+                                        };
+                                        
+                                        xhr.send(JSON.stringify({
+                                            action: 'friend_request_respond',
+                                            friend_user_id: request.user_id,
+                                            mode: mode
+                                        }));
+                                    };
+                                })
+                            }
                         }
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
                     }
-                } else {
-                    alert("Error! Request returned " + xhr.status + "!");
                 }
-            }
-        };
+            };
         
-        xhr.send();
+            xhr.send();
+        }());
 
         addFriendButton.onclick = function () {
             var xhr = new XMLHttpRequest();

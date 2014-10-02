@@ -44,6 +44,51 @@ function user_exists($username) {
     return !!($row['COUNT(*)']);
 }
 
+// Finds out if a user with the given ID exists
+function user_id_exists($user_id) {
+    $db = connectDB();
+    $stmt = $db->prepare('
+        SELECT
+            COUNT(*)
+        FROM
+            users
+        WHERE
+            user_id = :user_id
+        ;
+    ');
+    $stmt->execute([':user_id' => $user_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    // If 0 rows, no such user exists -> false
+    // If 1 row, user exists -> true
+    return !!($row['COUNT(*)']);
+}
+
+// Returns the ID of the user with the given username, or NULL if none
+function user_find_id($username) {
+    $db = connectDB();
+    
+    // Look up user
+    $stmt = $db->prepare('
+        SELECT
+            user_id
+        FROM
+            users
+        WHERE
+            username = :username
+        LIMIT
+            1
+        ;
+    ');
+    $stmt->execute([':username' => $friend_username]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($rows)) {
+        return NULL;
+    } else {
+        return $rows[0]['user_id'];
+    }
+}
+
 // Registers a user
 // Return value of TRUE indicates success, otherwise string error returned
 function user_register($username, $password) {
@@ -230,24 +275,11 @@ function user_add_friend($user_id, $friend_username) {
     $db = connectDB();
     
     // Look up user
-    $stmt = $db->prepare('
-        SELECT
-            user_id
-        FROM
-            users
-        WHERE
-            username = :username
-        LIMIT
-            1
-        ;
-    ');
-    $stmt->execute([':username' => $friend_username]);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    if (empty($rows)) {
+    $friend_user_id = user_find_id($friend_username);
+    
+    if ($friend_user_id === NULL) {
         return "No such user.";
     }
-    
-    $friend_user_id = $rows[0]['user_id'];
     
     if ($friend_user_id == $user_id) {
         return "You cannot send a friend request to yourself.";
@@ -327,4 +359,63 @@ function user_get_friend_requests($user_id) {
     ]);
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $requests;    
+}
+
+// Responds to a friend request ($mode is 'accept' to accept, 'deny' to deny)
+// Return value of TRUE indicates success, otherwise string error returned
+function user_friend_request_respond($user_id, $friend_user_id, $mode) {
+    $db = connectDB();
+    
+    // Check user exists
+    if (!user_id_exists($friend_user_id)) {
+        return "No such user.";
+    }
+    
+    // Check there is such a friend request
+    $stmt = $db->prepare('
+        SELECT
+            COUNT(*)
+        FROM
+            friendships
+        WHERE
+            user_id_1 = :user_id_1
+            AND user_id_2 = :user_id_2
+            AND provisional = 1
+        LIMIT
+            1
+        ;
+    ');
+    $stmt->execute([
+        ':user_id_1' => $friend_user_id,
+        ':user_id_2' => $user_id
+    ]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (!$rows[0]['COUNT(*)']) {
+        return "No such friend request.";
+    }
+    
+    // Actually accept/deny the request
+    if ($mode === 'accept') {
+        $db->beginTransaction();
+        $stmt = $db->prepare('
+            UPDATE
+                friendships
+            SET
+                provisional = 0
+            WHERE
+                user_id_1 = :user_id_1
+                AND user_id_2 = :user_id_2
+            ;
+        ');
+        $stmt->execute([
+            ':user_id_1' => $friend_user_id,
+            ':user_id_2' => $user_id
+        ]);
+        $db->commit();
+    
+        return TRUE;
+    } else {
+        return "Haven't implemented the \"$mode\" mode yet!";
+    }
 }

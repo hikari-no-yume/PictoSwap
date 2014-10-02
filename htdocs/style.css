@@ -325,6 +325,21 @@ body {
     list-style-type: square;
 }
 
+.friend-request-accept, .friend-request-deny {
+    padding: 0;
+    margin: 0 2px;
+    border: 0;
+    width: 20px;
+    height: 20px;
+    vertical-align: top;
+}
+.friend-request-accept {
+    background: transparent url(res/friend-accept.png) no-repeat no-repeat;
+}
+.friend-request-deny {
+    background: transparent url(res/friend-deny.png) no-repeat no-repeat;
+}
+
 #add-friend-box {
     border: 2px solid #5a8942;
     border-radius: 4px;

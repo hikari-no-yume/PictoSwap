@@ -58,6 +58,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         break;
+        case 'friend_request_respond':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $user_id = user_id();
+            $error = user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
+            if ($error === TRUE) {
+                respond([
+                    'error' => null
+                ]);
+            } else {
+                respond([
+                    'error' => $error
+                ]);
+            }
+        break;
         case 'register':
             $error = user_register($data->username, $data->password);
             if ($error === TRUE) {
