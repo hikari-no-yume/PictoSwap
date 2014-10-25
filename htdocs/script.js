@@ -77,7 +77,7 @@
                             tagName: 'button',
                             id: 'save-button',
                             children: [
-                                $('Save')
+                                $('Exit')
                             ]
                         }),
                         $({
@@ -127,7 +127,7 @@
         });
 
         var pages = [[], [], [], []], pageInkUsage = [0, 0, 0, 0],
-            page = 0, pageCount = 4, inkUsage = 0;
+            page = 0, pageCount = 4, inkUsage = 0, empty = true;
         var pageBackground = 'green-letter.png';
         var drawing = false, drawColour = 'black', lastX = 0, lastY = 0;
 
@@ -142,6 +142,11 @@
 
             // Amount of ink this page uses
             inkUsage += 1;
+
+            if (empty) {
+                empty = false;
+                saveButton.innerHTML = 'Save';
+            }
 
             // Begin a stroke
             drawing = true;
@@ -208,6 +213,12 @@
         }
 
         saveButton.onclick = function () {
+            // If pages empty, saveButton is actually exitButton
+            if (empty) {
+                loadLetters(context, SID);
+                return;
+            }
+
             savePage();
             loading(context.bottomScreen, 'Saving letter...');
 
@@ -249,6 +260,20 @@
                 // Reset ink usage for this page
                 inkMeter.addInk(inkUsage);
                 inkUsage = 0;
+
+                // Check total ink usage now
+                var notEmpty = false;
+                console.dir(pageInkUsage);
+                pageInkUsage.forEach(function (pageInk, i) {
+                    if (pageInk && i !== page) {
+                        notEmpty = true;
+                    }
+                });
+
+                empty = !notEmpty;
+                if (empty) {
+                    saveButton.innerHTML = 'Exit';
+                }
             }
         };
 
