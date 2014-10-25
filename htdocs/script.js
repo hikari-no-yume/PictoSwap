@@ -209,7 +209,7 @@
 
         saveButton.onclick = function () {
             savePage();
-            loading(context.topScreen, 'Saving letter...');
+            loading(context.bottomScreen, 'Saving letter...');
 
             var xhr = new XMLHttpRequest();
             xhr.open('POST', '/api.php?' + SID);
@@ -860,7 +860,7 @@
 
         xhr.send();
 
-        var loadingScreen = loading(context.topScreen, 'Loading friends list...');
+        var loadingScreen = loading(context.bottomScreen, 'Loading friends list...');
     }
 
     // Makes request for letters then switches to letter browsing screen when done
@@ -884,7 +884,7 @@
         };
         xhr.send();
 
-        loading(context.topScreen, 'Loading letters...');
+        loading(context.bottomScreen, 'Loading letters...');
     }
 
     // Displays login screen
