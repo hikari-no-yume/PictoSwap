@@ -73,6 +73,10 @@ function renderLetterPreviews($letter) {
 
     $background = imageCreateFromPNG('backgrounds/' . $letter->background);
     foreach ($letter->pages as $page) {
+        // No use rendering empty pages
+        if (count($page) === 0) {
+            continue;
+        }
         $image = imageCreateTrueColor(PAGE_WIDTH, PAGE_HEIGHT);
         $colourCache = [];
         imageCopy($image, $background, 0, 0, 0, 0, PAGE_WIDTH, PAGE_HEIGHT);
