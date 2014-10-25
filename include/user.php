@@ -361,6 +361,21 @@ function user_get_received_letter($user_id, $letter_id) {
     if ($letter === null) {
         return null;
     } else {
+        $stmt = $db->prepare('
+            UPDATE
+                letter_recipients
+            SET
+                read = 1
+            WHERE
+                user_id = :user_id
+                AND letter_id = :letter_id
+            ;
+        ');
+        $stmt->execute([
+            ':user_id' => $user_id,
+            ':letter_id' => $letter_id
+        ]);
+
         $letter['own'] = ((int)$letter['from_id'] === (int)user_id());
         $letter['content'] = json_decode($letter['content']);
         return $letter;

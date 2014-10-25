@@ -721,10 +721,13 @@
             });
             if (letter.own) {
                 elem.className += ' letter-preview-own';
+            } else if (!+letter.read) {
+                elem.className += ' letter-preview-read';
             }
             elem.onclick = function () {
                 updateCarousel(i);
                 loadLetter(context, letter.letter_id, SID);
+                elem.className = ("" + elem.className).replace(/letter-preview-read/, '');
             };
             letterElements.push(elem);
             x += LETTER_GAP;

@@ -396,6 +396,10 @@ body {
     border-color: silver;
 }
 
+.letter-preview-read {
+    border-color: lime;
+}
+
 #friends {
     position: absolute;
     top: 0;
