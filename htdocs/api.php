@@ -39,6 +39,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         break;
+        case 'send_letter':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $user_id = user_id();
+            $letter_id = $data->letter_id;
+            $friend_ids = $data->friend_ids;
+            $error = user_send_letter($user_id, $letter_id, $friend_ids);
+            if ($error === TRUE) {
+                respond([
+                    'error' => null
+                ]);
+            } else {
+                respond([
+                    'error' => $error
+                ]);
+            }
+        break;
+ 
         case 'add_friend':
             if (!user_logged_in()) {
                 respond([
@@ -154,6 +176,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $requests = user_get_friend_requests(user_id());
             respond([
                 'requests' => $requests,
+                'error' => null
+            ]);
+        break;
+        case 'get_possible_recipients':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $letter_id = $_GET['letter_id'];
+            $friends = user_get_possible_recipients(user_id(), $letter_id);
+            respond([
+                'friends' => $friends,
                 'error' => null
             ]);
         break;

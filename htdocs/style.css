@@ -363,7 +363,7 @@ body {
 
 #letter-carousel {
     position: absolute;
-    top: 40px;
+    top: 10px;
     left: 95px;
     height: 100px;
 }
@@ -383,10 +383,49 @@ body {
     text-align: center;
 }
 
+.letter-preview-send {
+    width: 130px;
+    border: 3px solid #5a8942;
+    border-radius: 5px;
+    font-size: 16pt;
+    background: #e9ffdd;
+}
 
 
 .letter-preview-own {
     border-color: silver;
+}
+
+#friends {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 320px;
+    height: 212px;
+    border: 3px solid #5a8942;
+    border-radius: 4px;
+    padding: 4px;
+    background: #d6dda3;
+    overflow-y: scroll;
+}
+
+#friends h2 {
+    margin: 2px;
+    font-size: 14pt;
+    font-family: sans-serif;
+}
+
+#friends-list {
+    padding-left: 20px;
+    list-style-type: square;
+}
+
+#send-button, #cancel-button {
+    width: 100%;
+    border: 3px solid #5a8942;
+    border-radius: 5px;
+    font-size: 16pt;
+    background: #e9ffdd;
 }
 
 #carousel-left-button, #carousel-right-button {

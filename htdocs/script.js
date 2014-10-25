@@ -313,7 +313,7 @@
 
     // Displays loading screen
     function loading(context, text) {
-        $({
+        return $({
             parentElement: context.bottomScreen,
             tagName: 'div',
             className: 'loading-background',
@@ -620,8 +620,22 @@
                 style: {
                     left: x + 'px',
                 },
-                children: letter.own ? [] : [
-                    $("from: " + letter.from_username)
+                children: [
+                    letter.own
+                    ? $({
+                        tagName: 'button',
+                        className: 'letter-preview-send',
+                        style: {
+                            left: x + 'px'
+                        },
+                        children: [
+                            $("Send")
+                        ],
+                        onclick: function () {
+                            sendLetter(letter.letter_id, context, SID);
+                        }
+                    })
+                    : $("from: " + letter.from_username)
                 ]
             });
             if (letter.own) {
@@ -674,6 +688,123 @@
         });
 
         updateCarousel(0);
+    }
+
+    // Makes request for list of friends then pops up a list to send a letter
+    function sendLetter(letterID, context, SID) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api.php?action=get_possible_recipients&letter_id=' + letterID + '&' + SID);
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        context.bottomScreen.removeChild(loadingScreen);
+
+                        var friends, friendList, sendButton, cancelButton;
+                        friends = $({
+                            parentElement: context.bottomScreen,
+                            tagName: 'div',
+                            id: 'friends',
+                            children: [
+                                $({
+                                    tagName: 'h2',
+                                    children: [
+                                        $('Send letter')
+                                    ]
+                                }),
+                                friendList = $({
+                                    tagName: 'ul',
+                                    id: 'friend-list'
+                                }),
+                                sendButton = $({
+                                    tagName: 'button',
+                                    id: 'send-button',
+                                    children: [
+                                        $("Send")
+                                    ]
+                                }),
+                                cancelButton = $({
+                                    tagName: 'button',
+                                    id: 'cancel-button',
+                                    children: [
+                                        $("Cancel")
+                                    ]
+                                })
+                            ]
+                        });
+                        if (data.friends.length === 0) {
+                            friendList.innerHTML = 'You have no friends that haven\'t yet been sent this letter';
+                        } else {
+                            friendList.innerHTML = '';
+                            data.friends.forEach(function (friend) {
+                                friend.chosen = false;
+                                $({
+                                    tagName: 'li',
+                                    parentElement: friendList,
+                                    children: [
+                                        $({
+                                            tagName: 'input',
+                                            type: 'checkbox',
+                                            checked: false,
+                                            onchange: function () {
+                                                friend.chosen = this.checked;
+                                            }
+                                        }),
+                                        $(friend.username)
+                                    ]
+                                });
+                            });
+                        }
+                        cancelButton.onclick = function () {
+                            context.bottomScreen.removeChild(friends);
+                        };
+                        sendButton.onclick = function () {
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', '/api.php?' + SID);
+                    
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState === 4) {
+                                    if (xhr.status === 200) {
+                                        var data = JSON.parse(xhr.responseText);
+                                        if (data.error) {
+                                            alert(data.error);
+                                        } else {
+                                            alert("Sent letter!");
+                                            context.bottomScreen.removeChild(friends);
+                                        }
+                                    } else {
+                                        alert("Error! Request returned " + xhr.status + "!");
+                                    }
+                                }
+                            };
+                            
+                            var friendIDs = [];
+                            data.friends.forEach(function (friend) {
+                                if (friend.chosen) {
+                                    friendIDs.push(friend.id);
+                                }
+                            });
+
+                            xhr.send(JSON.stringify({
+                                action: 'send_letter',
+                                letter_id: letterID,
+                                friend_ids: friendIDs
+                            }));
+                        };
+                    }
+                } else {
+                    alert("Error! Request returned " + xhr.status + "!");
+                }
+            }
+        };
+
+        xhr.send();
+
+        var loadingScreen = loading(context, 'Loading friends list...');
     }
 
     // Makes request for letters then switches to letter browsing screen when done

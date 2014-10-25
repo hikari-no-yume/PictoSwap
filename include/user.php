@@ -152,6 +152,53 @@ function user_login($username, $password) {
     return TRUE;
 }
 
+// Sends a user's letter to the specified recipients
+// Return value of TRUE indicates success, otherwise string error returned
+function user_send_letter($user_id, $letter_id, array $friend_ids) {
+    $db = connectDB();
+
+    // Check there is such a letter
+    $stmt = $db->prepare('
+        SELECT
+            COUNT(*)
+        FROM
+            letters
+        WHERE
+            letter_id = :letter_id
+            AND user_id = :user_id
+        ;
+    ');
+    $stmt->execute([
+        ':letter_id' => $letter_id,
+        ':user_id' => $user_id
+    ]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row['COUNT(*)']) {
+        return "There is no such letter with that ID owned by you.";
+    }
+
+    // Actually send
+    $db->beginTransaction();
+    foreach ($friend_ids as $friend_id) {
+        $stmt = $db->prepare('
+            INSERT INTO
+                letter_recipients(user_id, letter_id, read, timestamp)
+            VALUES
+                (:user_id, :letter_id, 0, datetime(\'now\'))
+            ;
+        ');
+        $stmt->execute([
+            ':user_id' => $friend_id,
+            ':letter_id' => $letter_id
+        ]);
+    }
+    $db->commit();
+
+    return TRUE;
+}
+
+
+
 // Adds a new letter for a user
 // Return value of TRUE indicated success, otherwise string error returned
 function user_new_letter($user_id, $letter) {
@@ -225,6 +272,52 @@ function user_get_received_letters($user_id) {
         $letter['own'] = ((int)$letter['from_id'] === (int)user_id());
     }
     return $letters;
+}
+
+// Gets possible recipients for a letter (friends it hasn't yet been sent to)
+function user_get_possible_recipients($user_id, $letter_id) {
+    $db = connectDB();
+    $stmt = $db->prepare('
+        SELECT
+            my_friends.user_id AS id,
+            users.username AS username
+        FROM
+            (
+                SELECT
+                    (CASE WHEN
+                        user_id_1 = :user_id
+                    THEN
+                        user_id_2
+                    ELSE
+                        user_id_1
+                    END) AS user_id
+                FROM
+                    friendships
+                WHERE
+                    user_id_1 = :user_id
+                    OR user_id_2 = :user_id
+            ) AS my_friends
+        LEFT JOIN
+            users
+        ON
+            my_friends.user_id = users.user_id 
+        WHERE
+            my_friends.user_id NOT IN (
+                SELECT
+                    user_id
+                FROM
+                    letter_recipients
+                WHERE
+                    letter_recipients.letter_id = :letter_id
+            )
+        ;
+    ');
+    $stmt->execute([
+        ':user_id' => $user_id,
+        ':letter_id' => $letter_id
+    ]);
+    $friends = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $friends;
 }
 
 // Gets a letter received by a user
