@@ -420,7 +420,7 @@ body {
     list-style-type: square;
 }
 
-#send-button, #cancel-button {
+#send-button, #cancel-button, #logout-button {
     width: 100%;
     border: 3px solid #5a8942;
     border-radius: 5px;

@@ -412,12 +412,19 @@
 
     // Makes friend requests popup
     function makeFriendRequests(SID) {
-        var friendRequests, friendRequestList, addFriendBox, addFriendButton;
+        var friendRequests, logoutButton, friendRequestList, addFriendBox, addFriendButton;
         friendRequests = $({
             tagName: 'div',
             id: 'friend-requests',
             className: 'hidden',
             children: [
+                logoutButton = $({
+                    tagName: 'button',
+                    id: 'logout-button',
+                    children: [
+                        $('Logout')
+                    ]
+                }),
                 $({
                     tagName: 'h2',
                     children: [
@@ -452,6 +459,24 @@
                 }),
             ]
         });
+
+        logoutButton.onclick = function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api.php?' + SID);
+
+            xhr.onreadystatechange = function () {
+                var data = JSON.parse(xhr.responseText);
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    window.location.reload();
+                }
+            };
+            
+            xhr.send(JSON.stringify({
+                action: 'logout'
+            }));
+        };
 
         (function refreshFriendRequests() {
             var xhr = new XMLHttpRequest();

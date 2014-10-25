@@ -59,8 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'error' => $error
                 ]);
             }
-        break;
- 
+        break; 
         case 'add_friend':
             if (!user_logged_in()) {
                 respond([
@@ -123,6 +122,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'error' => $error
                 ]);
             }
+        break;
+        case 'logout':
+            user_logout();
+            respond([
+                'error' => null
+            ]);
         break;
         default:
             respond([

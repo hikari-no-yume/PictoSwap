@@ -152,6 +152,11 @@ function user_login($username, $password) {
     return TRUE;
 }
 
+// Logs out the user
+function user_logout() {
+    session_destroy();
+}
+
 // Sends a user's letter to the specified recipients
 // Return value of TRUE indicates success, otherwise string error returned
 function user_send_letter($user_id, $letter_id, array $friend_ids) {
