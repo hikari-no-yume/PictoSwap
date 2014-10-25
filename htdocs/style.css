@@ -363,9 +363,9 @@ body {
 
 #letter-carousel {
     position: absolute;
-    top: 50px;
+    top: 40px;
     left: 95px;
-    height: 80px;
+    height: 100px;
 }
 
 .letter-preview {
@@ -375,6 +375,15 @@ body {
     border: 8px solid blue;
     border-radius: 8px;
 }
+
+.letter-preview-meta {
+    position: absolute;
+    width: 130px;
+    top: 85px;
+    text-align: center;
+}
+
+
 
 .letter-preview-own {
     border-color: silver;

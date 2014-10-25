@@ -613,6 +613,17 @@
                     left: x + 'px'
                 }
             });
+            $({
+                tagName: 'div',
+                className: 'letter-preview-meta',
+                parentElement: letterCarousel,
+                style: {
+                    left: x + 'px',
+                },
+                children: letter.own ? [] : [
+                    $("from: " + letter.from_username)
+                ]
+            });
             if (letter.own) {
                 elem.className += ' letter-preview-own';
             }
