@@ -79,7 +79,7 @@ function user_find_id($username) {
             1
         ;
     ');
-    $stmt->execute([':username' => $friend_username]);
+    $stmt->execute([':username' => $username]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     if (empty($rows)) {
@@ -508,7 +508,24 @@ function user_friend_request_respond($user_id, $friend_user_id, $mode) {
         $db->commit();
     
         return TRUE;
+    } else if ($mode === 'deny') {
+        $db->beginTransaction();
+        $stmt = $db->prepare('
+            DELETE FROM
+                friendships
+            WHERE
+                user_id_1 = :user_id_1
+                AND user_id_2 = :user_id_2
+            ;
+        ');
+        $stmt->execute([
+            ':user_id_1' => $friend_user_id,
+            ':user_id_2' => $user_id
+        ]);
+        $db->commit();
+
+        return TRUE;
     } else {
-        return "Haven't implemented the \"$mode\" mode yet!";
+        return "The \"$mode\" mode is not supported.";
     }
 }
