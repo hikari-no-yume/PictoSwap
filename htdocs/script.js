@@ -848,7 +848,19 @@
                 $({
                     tagName: 'p',
                     children: [
-                        $('With PictoSwap, you can draw messages and send them to your friends on other 3DS systems!')
+                        $('With PictoSwap, you can draw messages and send them to your friends on other 3DS systems!'),
+                    ]
+                }),
+                $({
+                    tagName: 'p',
+                    children: [
+                        $({
+                            tagName: 'a',
+                            href: 'https://github.com/TazeTSchnitzel/PictoSwap',
+                            children: [
+                                $('Made by Andrea Faulds, 2013-2014. Fork me on GitHub!')
+                            ]
+                        })
                     ]
                 })
             ]
