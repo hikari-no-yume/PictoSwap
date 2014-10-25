@@ -465,11 +465,17 @@
             xhr.open('POST', '/api.php?' + SID);
 
             xhr.onreadystatechange = function () {
-                var data = JSON.parse(xhr.responseText);
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    window.location.reload();
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            window.location.reload();
+                        }
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
+                    }
                 }
             };
             
@@ -517,12 +523,18 @@
                                         xhr.open('POST', '/api.php?' + SID);
 
                                         xhr.onreadystatechange = function () {
-                                            var data = JSON.parse(xhr.responseText);
-                                            if (data.error) {
-                                                alert(data.error);
-                                            } else {
-                                                alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
-                                                refreshFriendRequests();
+                                            if (xhr.readyState === 4) {
+                                                if (xhr.status === 200) {
+                                                    var data = JSON.parse(xhr.responseText);
+                                                    if (data.error) {
+                                                        alert(data.error);
+                                                    } else {
+                                                        alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
+                                                        refreshFriendRequests();
+                                                    }
+                                                } else {
+                                                    alert("Error! Request returned " + xhr.status + "!");
+                                                }
                                             }
                                         };
                                         
