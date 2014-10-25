@@ -343,6 +343,13 @@
     function viewLetter(context, letter) {
         var content = letter.content;
 
+        var pageCount = 0;
+        content.pages.forEach(function (page) {
+            if (page.length) {
+                pageCount++;
+            }
+        });
+
         var previewCanvas = new PictoSwap.Canvas(308, 168);
         var previewArea, previewNote, previewFrame;
         context.topScreen.innerHTML = '';
@@ -355,7 +362,7 @@
                     tagName: 'div',
                     className: 'preview-note',
                     children: [
-                        $('Press (A) to stop')
+                        $('Page 1/' + pageCount)
                     ]
                 }),
                 $({
@@ -384,8 +391,18 @@
             ]
         });
 
-        previewCanvas.importStrokes(content.pages[0]);
-        previewCanvas.replay(false);
+        (function playPage(pageNo) {
+            if (pageNo >= pageCount) {
+                return;
+            }
+            previewNote.innerHTML = 'Page ' + (pageNo + 1) + '/' + pageCount;
+            previewCanvas.importStrokes(content.pages[pageNo]);
+            previewCanvas.replay(false, function () {
+                setTimeout(function () {
+                    playPage(pageNo + 1);
+                }, 1000);
+            });
+        }(0));
     }
 
     // Loads letter for letter view screen
