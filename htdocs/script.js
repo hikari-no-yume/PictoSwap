@@ -936,13 +936,27 @@
                     ]
                 }),
                 $({
+                    tagName: 'a',
+                    children: [
+                        $('Follow '),
+                        $({
+                            tagName: 'a',
+                            href: 'https://twitter.com/PictoSwap',
+                            children: [
+                                $('@PictoSwap')
+                            ]
+                        }),
+                        $(' on Twitter for updates!')
+                    ]
+                }),
+                $({
                     tagName: 'p',
                     children: [
                         $({
                             tagName: 'a',
                             href: 'https://github.com/TazeTSchnitzel/PictoSwap',
                             children: [
-                                $('Made by Andrea Faulds, 2013-2014. Fork me on GitHub!')
+                                $('By Andrea Faulds, 2013-2014. Fork me on GitHub.')
                             ]
                         })
                     ]
