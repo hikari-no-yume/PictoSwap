@@ -936,7 +936,7 @@
                     ]
                 }),
                 $({
-                    tagName: 'a',
+                    tagName: 'p',
                     children: [
                         $('Follow '),
                         $({
