@@ -11,7 +11,7 @@
             colourPicker = new PictoSwap.ColourPicker(),
             canvas = new PictoSwap.Canvas(308, 168),
             previewCanvas = new PictoSwap.Canvas(308, 168),
-            pencilTool = new PictoSwap.PencilTool(canvas,previewCanvas);
+            pencilTool = new PictoSwap.PencilTool(canvas,previewCanvas),
 
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
 
@@ -132,13 +132,14 @@
             pages.push(new PictoSwap.Page());
         }
 
-           // page = 0, pageCount = 4,  empty = true;
-
 
         var pageBackground = 'green-letter.png';
 
         previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
         canvasFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
+
+
+        currentTool = pencilTool; //Set the current tool to the pencil tool
 
         canvas.element.onmousedown = function (e) {
             // Only allow drawing if we have enough ink
@@ -155,14 +156,14 @@
             }
 
 
-            pencilTool.onCanvasMousedown(e,pages[currentPage]);
+            currentTool.onCanvasMousedown(e,pages[currentPage]);
 
         };
-        var onMove = canvas.element.onmousemove = function (e) {
-            pencilTool.onCanvasMousemove(e,pages[currentPage]);
+        canvas.element.onmousemove = function (e) {
+            currentTool.onCanvasMousemove(e,pages[currentPage]);
         };
         canvas.element.onmouseup = function (e) {
-            pencilTool.onCanvasMouseup(e,pages[currentPage]);
+            currentTool.onCanvasMouseup(e,pages[currentPage]);
         };
 
         function serialiseLetter() {
