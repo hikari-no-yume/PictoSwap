@@ -11,6 +11,7 @@ user_init();
 
 <script src="jInsert.js"></script>
 <script src="lib3DS.js"></script>
+<script src="script/Page.js"></script>
 <script src="script/InkMeter.js"></script>
 <script src="script/Canvas.js"></script>
 <script src="script/ColourPicker.js"></script>

@@ -127,8 +127,14 @@
             ]
         });
 
-        var pages = [[], [], [], []], pageInkUsage = [0, 0, 0, 0],
-            page = 0, pageCount = 4, inkUsage = 0, empty = true;
+	var pages = [], currentPage=0, pageCount=4;
+	for(var i=0;i<pageCount;i++){
+            pages.push(new PictoSwap.Page());
+        }
+
+           // page = 0, pageCount = 4,  empty = true;
+
+
         var pageBackground = 'green-letter.png';
 
         previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
@@ -141,35 +147,44 @@
             }
 
             // Amount of ink this page uses
-            inkUsage += 1;
+            pages[currentPage].inkUsage += 1;
 
-            if (empty) {
-                empty = false;
+            if (pages[currentPage].empty) {
+                pages[currentPage].empty = false;
                 saveButton.innerHTML = 'Save';
             }
 
 
-            pencilTool.onCanvasMousedown(e);
+            pencilTool.onCanvasMousedown(e,pages[currentPage]);
 
         };
         var onMove = canvas.element.onmousemove = function (e) {
-            pencilTool.onCanvasMousemove(e);
+            pencilTool.onCanvasMousemove(e,pages[currentPage]);
         };
         canvas.element.onmouseup = function (e) {
-            pencilTool.onCanvasMouseup(e);
+            pencilTool.onCanvasMouseup(e,pages[currentPage]);
         };
 
         function serialiseLetter() {
+            var pageDataArray = [], pageInkArray = [];
+            for(var i=0;i<pageCount;i++){
+            pageDataArray.push(pages[i].data);
+            pageInkArray.push(pages[i].inkUsage);
+	    }
             return {
                 background: pageBackground,
-                pages: pages,
-                pageInkUsage: pageInkUsage
+                pages: pageDataArray,
+                pageInkUsage: pageInkArray
             };
         }
 
         saveButton.onclick = function () {
             // If pages empty, saveButton is actually exitButton
-            if (empty) {
+            var allempty = true;
+            for(var i=0;i<pages.length;i++){
+                if(!pages[i].empty)allempty=false;
+            }
+            if (allempty) {
                 loadLetters(context, SID);
                 return;
             }
@@ -213,34 +228,30 @@
                 previewCanvas.clearStrokes();
 
                 // Reset ink usage for this page
-                inkMeter.addInk(inkUsage);
-                inkUsage = 0;
+                inkMeter.addInk(pages[currentPage].inkUsage);
+                pages[currentPage].inkUsage = 0;
 
                 // Check total ink usage now
                 var notEmpty = false;
-                console.dir(pageInkUsage);
-                pageInkUsage.forEach(function (pageInk, i) {
-                    if (pageInk && i !== page) {
+                pages.forEach(function (page, i) {
+                    if (page.inkUsage && i !== currentPage) {
                         notEmpty = true;
                     }
                 });
 
-                empty = !notEmpty;
-                if (empty) {
+                if (!notEmpty) {
                     saveButton.innerHTML = 'Exit';
                 }
             }
         };
 
         function savePage() {
-            pages[page] = canvas.exportStrokes();
-            pageInkUsage[page] = inkUsage;
+            pages[currentPage].data = canvas.exportStrokes();
         }
 
         function loadPage() {
-            canvas.importStrokes(pages[page], true);
-            inkUsage = pageInkUsage[page];
-            previewCanvas.importStrokes(pages[page], true);
+            canvas.importStrokes(pages[currentPage].data, true);
+            previewCanvas.importStrokes(pages[currentPage].data, true);
         }
 
         function updatePageCounter() {
@@ -250,18 +261,18 @@
 
         downButton.onclick = function () {
             // Limit no. of pages
-            if (page + 1 < pageCount) {
+            if (currentPage + 1 < pageCount) {
                 savePage();
-                page++;
+                currentPage++;
                 updatePageCounter()
                 loadPage();
             }   
         };
 
         upButton.onclick = function () {
-            if (page - 1 >= 0) {
+            if (currentPage - 1 >= 0) {
                 savePage();
-                page--;
+                currentPage--;
                 updatePageCounter()
                 loadPage();
             }   
