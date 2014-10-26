@@ -127,8 +127,8 @@
             ]
         });
 
-	var pages = [], currentPage=0, pageCount=4;
-	for(var i=0;i<pageCount;i++){
+        var pages = [], currentPage=0, pageCount=4;
+        pages.forEach (function (){
             pages.push(new PictoSwap.Page());
         }
 
@@ -142,19 +142,10 @@
         currentTool = pencilTool; //Set the current tool to the pencil tool
 
         canvas.element.onmousedown = function (e) {
-            // Only allow drawing if we have enough ink
-            if (!inkMeter.subtractInk(1)) {
-                return;
-            }
-
-            // Amount of ink this page uses
-            pages[currentPage].inkUsage += 1;
 
             if (pages[currentPage].empty) {
-                pages[currentPage].empty = false;
-                saveButton.innerHTML = 'Save';
+                saveButton.innerHTML = 'Save'; //TODO: Find a way to have this be called by the current tool
             }
-
 
             currentTool.onCanvasMousedown(e,pages[currentPage]);
 
@@ -168,10 +159,10 @@
 
         function serialiseLetter() {
             var pageDataArray = [], pageInkArray = [];
-            for(var i=0;i<pageCount;i++){
-            pageDataArray.push(pages[i].data);
-            pageInkArray.push(pages[i].inkUsage);
-	    }
+            pageDataArray.forEach (function (page,i) {
+                pageDataArray.push(pages[i].data);
+                pageInkArray.push(pages[i].inkUsage);
+            }
             return {
                 background: pageBackground,
                 pages: pageDataArray,
@@ -182,7 +173,7 @@
         saveButton.onclick = function () {
             // If pages empty, saveButton is actually exitButton
             var allempty = true;
-            for(var i=0;i<pages.length;i++){
+            pages.forEach (function (page,i) {
                 if(!pages[i].empty)allempty=false;
             }
             if (allempty) {
