@@ -303,7 +303,7 @@ body {
     right: 0;
     bottom: 36px;
     width: 200px;
-    height: 160px;
+    height: 170px;
     border: 3px solid #5a8942;
     border-right: 0;
     border-radius: 4px;
@@ -315,7 +315,7 @@ body {
 }
 
 #friend-requests h2 {
-    margin: 2px;
+    margin: 8px 0;
     font-size: 14pt;
     font-family: sans-serif;
 }
@@ -424,12 +424,21 @@ body {
     list-style-type: square;
 }
 
-#send-button, #cancel-button, #logout-button {
+#send-button, #cancel-button, #logout-button, #change-password-button {
     width: 100%;
     border: 3px solid #5a8942;
     border-radius: 5px;
     font-size: 16pt;
     background: #e9ffdd;
+}
+
+#new-password, #confirm-new-password {
+    border: 2px solid #5a8942;
+    border-radius: 4px;
+    font-size: 14pt;
+    background: white;
+    width: 100%;
+    margin-right: 5px;
 }
 
 #carousel-left-button, #carousel-right-button {

@@ -114,6 +114,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         break;
+        case 'change_password':
+            if (!user_logged_in()) {
+                respond([
+                    'error' => "User is not logged in!"
+                ]);
+                exit;
+            }
+            $user_id = user_id(); 
+            $error = user_change_password($user_id, $data->new_password);
+            if ($error === TRUE) {
+                respond([
+                    'error' => null
+                ]);
+            } else {
+                respond([
+                    'error' => $error
+                ]);
+            }
+        break; 
         case 'login':
             $error = user_login($data->username, $data->password);
             if ($error === TRUE) {

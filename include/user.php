@@ -89,6 +89,31 @@ function user_find_id($username) {
     }
 }
 
+// Changes a user's password
+// Return value of TRUE indicates success, otherwise string error returned
+function user_change_password($user_id, $new_password) {
+    $db = connectDB();
+    $password_hash = password_hash($new_password, PASSWORD_BCRYPT);
+
+    $db->beginTransaction();
+    $stmt = $db->prepare('
+        UPDATE
+            users
+        SET
+            password_hash = :password_hash
+        WHERE
+            user_id = :user_id
+        ;
+    ');
+    $stmt->execute([
+        ':user_id' => $user_id,
+        ':password_hash' => $password_hash
+    ]);
+    $db->commit();
+
+    return TRUE;
+}
+
 // Registers a user
 // Return value of TRUE indicates success, otherwise string error returned
 function user_register($username, $password) {

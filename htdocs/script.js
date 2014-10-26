@@ -456,7 +456,7 @@
 
     // Makes friend requests popup
     function makeFriendRequests(SID) {
-        var friendRequests, logoutButton, friendRequestList, addFriendBox, addFriendButton;
+        var friendRequests, logoutButton, newPassword, confirmNewPassword, changePasswordButton, friendRequestList, addFriendBox, addFriendButton;
         friendRequests = $({
             tagName: 'div',
             id: 'friend-requests',
@@ -467,6 +467,31 @@
                     id: 'logout-button',
                     children: [
                         $('Logout')
+                    ]
+                }),
+                $({
+                    tagName: 'h2',
+                    children: [
+                        $('Change password')
+                    ]
+                }),
+                newPassword = $({
+                    tagName: 'input',
+                    id: 'new-password',
+                    type: 'password',
+                    placeholder: 'new password'
+                }),
+                confirmNewPassword = $({
+                    tagName: 'input',
+                    id: 'confirm-new-password',
+                    type: 'password',
+                    placeholder: 'confirm new password'
+                }),
+                changePasswordButton = $({
+                    tagName: 'button',
+                    id: 'change-password-button',
+                    children: [
+                        $('Change')
                     ]
                 }),
                 $({
@@ -503,6 +528,38 @@
                 }),
             ]
         });
+
+        changePasswordButton.onclick = function () {
+            if (newPassword.value !== confirmNewPassword.value) {
+                alert("Passwords must match!");
+                newPassword.value = confirmNewPassword.value = '';
+                return;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api.php?' + SID);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
+                        if (data.error) {
+                            alert(data.error);
+                        } else {
+                            alert("Password changed.");
+                            newPassword.value = confirmNewPassword.value = '';
+                        }
+                    } else {
+                        alert("Error! Request returned " + xhr.status + "!");
+                    }
+                }
+            };
+            
+            xhr.send(JSON.stringify({
+                action: 'change_password',
+                new_password: newPassword.value
+            }));
+        };
 
         logoutButton.onclick = function () {
             var xhr = new XMLHttpRequest();
