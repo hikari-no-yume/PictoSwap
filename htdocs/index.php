@@ -14,6 +14,7 @@ user_init();
 <script src="script/InkMeter.js"></script>
 <script src="script/Canvas.js"></script>
 <script src="script/ColourPicker.js"></script>
+<script src="script/PencilTool.js"></script>
 <script src=script.js></script>
 <script>
 window.PictoSwap = window.PictoSwap || {};

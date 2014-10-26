@@ -10,7 +10,8 @@
         var inkMeter = new PictoSwap.InkMeter(20000, 20000),
             colourPicker = new PictoSwap.ColourPicker(),
             canvas = new PictoSwap.Canvas(308, 168),
-            previewCanvas = new PictoSwap.Canvas(308, 168);
+            previewCanvas = new PictoSwap.Canvas(308, 168),
+            pencilTool = new PictoSwap.PencilTool(canvas,previewCanvas);
 
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
 
@@ -129,7 +130,6 @@
         var pages = [[], [], [], []], pageInkUsage = [0, 0, 0, 0],
             page = 0, pageCount = 4, inkUsage = 0, empty = true;
         var pageBackground = 'green-letter.png';
-        var drawing = false, drawColour = 'black', lastX = 0, lastY = 0;
 
         previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
         canvasFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
@@ -148,60 +148,15 @@
                 saveButton.innerHTML = 'Save';
             }
 
-            // Begin a stroke
-            drawing = true;
-            canvas.beginStroke();
-            previewCanvas.beginStroke();
 
-            // Draw dot
-            // We cache x and y to avoid bizzare browser bugs
-            // Don't ask me why, but the second time you read e.layerX, it becomes zero!
-            var x = e.layerX, y = e.layerY;
-            canvas.addDot(drawColour, x, y);
-            previewCanvas.addDot(drawColour, x, y);
+            pencilTool.onCanvasMousedown(e);
 
-            // Store the position at present so that we know where next
-            // segment will start
-            lastX = e.layerX;
-            lastY = e.layerY;
         };
         var onMove = canvas.element.onmousemove = function (e) {
-            // We cache x and y to avoid bizzare browser bugs
-            // Don't ask me why, but the second time you read e.layerX, it becomes zero!
-            var x = e.layerX, y = e.layerY;
-            
-            // Prevent mouse moving causing drawing on desktop
-            // (Obviously, "mousemove" can't fire when not dragging on 3DS)
-            if (drawing && (lastX !== x || lastY !== y)) {
-                // The length of this segment will be subtracted from our "ink"
-                var inkUsed = calcDistance(lastX, lastY, x, y);
-
-                // Only allow drawing if we have enough ink
-                if (!inkMeter.subtractInk(inkUsed)) {
-                    return;
-                }
-
-                // Amount of ink this page uses
-                inkUsage += inkUsed;
-
-                // Draw line
-                canvas.addLine(drawColour, lastX, lastY, x, y);
-                previewCanvas.addLine(drawColour, lastX, lastY, x, y);
-            }
-
-            lastX = x;
-            lastY = y;
+            pencilTool.onCanvasMousemove(e);
         };
         canvas.element.onmouseup = function (e) {
-            if (drawing) {
-                onMove(e);
-
-                // End of stroke
-                canvas.endStroke();
-                previewCanvas.endStroke();
-                
-                drawing = false;
-            }
+            pencilTool.onCanvasMouseup(e);
         };
 
         function serialiseLetter() {
