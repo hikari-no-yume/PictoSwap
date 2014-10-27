@@ -10,7 +10,8 @@
         var inkMeter = new PictoSwap.InkMeter(20000, 20000),
             colourPicker = new PictoSwap.ColourPicker(),
             canvas = new PictoSwap.Canvas(308, 168),
-            previewCanvas = new PictoSwap.Canvas(308, 168);
+            previewCanvas = new PictoSwap.Canvas(308, 168),
+            pencilTool = new PictoSwap.PencilTool(canvas,previewCanvas),
 
         context.topScreen.innerHTML = context.bottomScreen.innerHTML = '';
 
@@ -126,95 +127,58 @@
             ]
         });
 
-        var pages = [[], [], [], []], pageInkUsage = [0, 0, 0, 0],
-            page = 0, pageCount = 4, inkUsage = 0, empty = true;
+        var pages = [], currentPage=0, pageCount=4;
+        for(var i=0; i<pageCount; i++){
+            pages.push(new PictoSwap.Page());
+        }
+
+
         var pageBackground = 'green-letter.png';
-        var drawing = false, drawColour = 'black', lastX = 0, lastY = 0;
 
         previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
         canvasFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
 
+
+        currentTool = pencilTool; //Set the current tool to the pencil tool
+
         canvas.element.onmousedown = function (e) {
-            // Only allow drawing if we have enough ink
-            if (!inkMeter.subtractInk(1)) {
-                return;
+
+            if (pages[currentPage].empty) {
+                saveButton.innerHTML = 'Save'; //TODO: Find a way to have this be called by the current tool
             }
 
-            // Amount of ink this page uses
-            inkUsage += 1;
+            currentTool.onCanvasMousedown(e,pages[currentPage]);
 
-            if (empty) {
-                empty = false;
-                saveButton.innerHTML = 'Save';
-            }
-
-            // Begin a stroke
-            drawing = true;
-            canvas.beginStroke();
-            previewCanvas.beginStroke();
-
-            // Draw dot
-            // We cache x and y to avoid bizzare browser bugs
-            // Don't ask me why, but the second time you read e.layerX, it becomes zero!
-            var x = e.layerX, y = e.layerY;
-            canvas.addDot(drawColour, x, y);
-            previewCanvas.addDot(drawColour, x, y);
-
-            // Store the position at present so that we know where next
-            // segment will start
-            lastX = e.layerX;
-            lastY = e.layerY;
         };
-        var onMove = canvas.element.onmousemove = function (e) {
-            // We cache x and y to avoid bizzare browser bugs
-            // Don't ask me why, but the second time you read e.layerX, it becomes zero!
-            var x = e.layerX, y = e.layerY;
-            
-            // Prevent mouse moving causing drawing on desktop
-            // (Obviously, "mousemove" can't fire when not dragging on 3DS)
-            if (drawing && (lastX !== x || lastY !== y)) {
-                // The length of this segment will be subtracted from our "ink"
-                var inkUsed = calcDistance(lastX, lastY, x, y);
-
-                // Only allow drawing if we have enough ink
-                if (!inkMeter.subtractInk(inkUsed)) {
-                    return;
-                }
-
-                // Amount of ink this page uses
-                inkUsage += inkUsed;
-
-                // Draw line
-                canvas.addLine(drawColour, lastX, lastY, x, y);
-                previewCanvas.addLine(drawColour, lastX, lastY, x, y);
-            }
-
-            lastX = x;
-            lastY = y;
+        canvas.element.onmousemove = function (e) {
+            currentTool.onCanvasMousemove(e,pages[currentPage]);
         };
         canvas.element.onmouseup = function (e) {
-            if (drawing) {
-                onMove(e);
-
-                // End of stroke
-                canvas.endStroke();
-                previewCanvas.endStroke();
-                
-                drawing = false;
-            }
+            currentTool.onCanvasMouseup(e,pages[currentPage]);
         };
 
         function serialiseLetter() {
+            var pageDataArray = [], pageInkArray = [];
+            pageDataArray.forEach (function (page,i) {
+                pageDataArray.push(pages[i].data);
+                pageInkArray.push(pages[i].inkUsage);
+            }
             return {
                 background: pageBackground,
-                pages: pages,
-                pageInkUsage: pageInkUsage
+                pages: pageDataArray,
+                pageInkUsage: pageInkArray
             };
         }
 
         saveButton.onclick = function () {
             // If pages empty, saveButton is actually exitButton
-            if (empty) {
+            var allempty = true;
+            pages.forEach (function (page,i) {
+                if(!pages[i].empty){
+                    allempty=false;
+                }
+            }
+            if (allempty) {
                 loadLetters(context, SID);
                 return;
             }
@@ -258,34 +222,30 @@
                 previewCanvas.clearStrokes();
 
                 // Reset ink usage for this page
-                inkMeter.addInk(inkUsage);
-                inkUsage = 0;
+                inkMeter.addInk(pages[currentPage].inkUsage);
+                pages[currentPage].inkUsage = 0;
 
                 // Check total ink usage now
                 var notEmpty = false;
-                console.dir(pageInkUsage);
-                pageInkUsage.forEach(function (pageInk, i) {
-                    if (pageInk && i !== page) {
+                pages.forEach(function (page, i) {
+                    if (page.inkUsage && i !== currentPage) {
                         notEmpty = true;
                     }
                 });
 
-                empty = !notEmpty;
-                if (empty) {
+                if (!notEmpty) {
                     saveButton.innerHTML = 'Exit';
                 }
             }
         };
 
         function savePage() {
-            pages[page] = canvas.exportStrokes();
-            pageInkUsage[page] = inkUsage;
+            pages[currentPage].data = canvas.exportStrokes();
         }
 
         function loadPage() {
-            canvas.importStrokes(pages[page], true);
-            inkUsage = pageInkUsage[page];
-            previewCanvas.importStrokes(pages[page], true);
+            canvas.importStrokes(pages[currentPage].data, true);
+            previewCanvas.importStrokes(pages[currentPage].data, true);
         }
 
         function updatePageCounter() {
@@ -295,18 +255,18 @@
 
         downButton.onclick = function () {
             // Limit no. of pages
-            if (page + 1 < pageCount) {
+            if (currentPage + 1 < pageCount) {
                 savePage();
-                page++;
+                currentPage++;
                 updatePageCounter()
                 loadPage();
             }   
         };
 
         upButton.onclick = function () {
-            if (page - 1 >= 0) {
+            if (currentPage - 1 >= 0) {
                 savePage();
-                page--;
+                currentPage--;
                 updatePageCounter()
                 loadPage();
             }   
