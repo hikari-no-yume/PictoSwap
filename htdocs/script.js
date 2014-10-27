@@ -128,7 +128,7 @@
         });
 
         var pages = [], currentPage=0, pageCount=4;
-        pages.forEach (function (){
+        for(var i=0; i<pageCount; i++){
             pages.push(new PictoSwap.Page());
         }
 
@@ -174,7 +174,9 @@
             // If pages empty, saveButton is actually exitButton
             var allempty = true;
             pages.forEach (function (page,i) {
-                if(!pages[i].empty)allempty=false;
+                if(!pages[i].empty){
+                    allempty=false;
+                }
             }
             if (allempty) {
                 loadLetters(context, SID);

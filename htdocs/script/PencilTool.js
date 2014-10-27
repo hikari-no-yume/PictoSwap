@@ -1,7 +1,6 @@
 (function (PictoSwap) {
     'use strict';
     PictoSwap.PencilTool = function (canvas, previewCanvas, inkMeter) {
-        var canvas = canvas, previewCanvas = previewCanvas, inkMeter=inkMeter;
         var drawing = false, drawColour = 'black';
 
         var x,y,lastX,lastY;
@@ -66,9 +65,9 @@
             }
         }
         return {
-            onCanvasMousedown:onCanvasMousedown,
-            onCanvasMousemove:onCanvasMousemove,
-            onCanvasMouseup:onCanvasMouseup,
+            onCanvasMousedown: onCanvasMousedown,
+            onCanvasMousemove: onCanvasMousemove,
+            onCanvasMouseup: onCanvasMouseup,
         };
     };
 }(window.PictoSwap = window.PictoSwap || {}));
