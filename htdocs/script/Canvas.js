@@ -1,4 +1,5 @@
 (function (PictoSwap) {
+    'use strict';
     // Canvas class
     PictoSwap.Canvas = function (width, height) {
         var cv = $({

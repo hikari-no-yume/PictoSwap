@@ -1,5 +1,6 @@
 (function (PictoSwap) {
-    PictoSwap.PencilTool = function (canvas, previewCanvas,inkMeter) {
+    'use strict';
+    PictoSwap.PencilTool = function (canvas, previewCanvas, inkMeter) {
         var canvas = canvas, previewCanvas = previewCanvas, inkMeter=inkMeter;
         var drawing = false, drawColour = 'black';
 
