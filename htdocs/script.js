@@ -6,6 +6,72 @@
         return Math.sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1)));
     }
 
+    // Makes a request internal to GET/POST
+    function makeRequest(options) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(options.method, options.url);
+        
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.error) { 
+                        if (options.hasOwnProperty('onerror')) {
+                            options.onerror(data.error);
+                        } else {
+                            alert(data.error);
+                        }
+                    } else {
+                        options.onsuccess(data);
+                    }
+                } else {
+                    if (options.hasOwnProperty('onerror')) {
+                        options.onerror("Request returned " + xhr.status + " " + xhr.statusText);
+                    } else {
+                        alert("Error! Request returned " + xhr.status + " " + xhr.statusText + "!");
+                    }
+                }
+            }
+        };
+
+        if (options.hasOwnProperty('postData')) {
+            xhr.send(options.postData);
+        } else {
+            xhr.send();
+        }
+    }
+
+    function getRequest(options) {
+        options.method = 'GET';
+        var params = '';
+        if (options.hasOwnProperty('SID')) {
+            params = options.SID;
+        }
+        for (var key in options.message) {
+            if (options.message.hasOwnProperty(key)) {
+                if (params.length) {
+                    params += '&';
+                }
+                params += key + '=' + encodeURIComponent(options.message[key]);
+            }
+        }
+        options.url = '/api.php?' + params;
+            
+        makeRequest(options);
+    }
+
+    function postRequest(options) {
+        options.method = 'POST';
+        if (options.hasOwnProperty('SID')) {
+            options.url = '/api.php?' + options.SID;
+        } else {
+            options.url = '/api.php';
+        }
+        options.postData = JSON.stringify(options.message);
+
+        makeRequest(options);
+    }
+
     function compose(context, SID) {
         var inkMeter = new PictoSwap.InkMeter(20000, 20000),
             colourPicker = new PictoSwap.ColourPicker(),
@@ -220,29 +286,27 @@
             }
 
             savePage();
-            loading(context.bottomScreen, 'Saving letter...');
+            var loadScreen = loading(context.bottomScreen, 'Saving letter...');
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api.php?' + SID);
-            
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
+            (function request() {
+                postRequest({
+                    message: {
+                        action: 'new_letter',
+                        letter: serialiseLetter()
+                    },
+                    SID: SID,
+                    onsuccess: function () {
+                        loadLetters(context, SID);
+                    },
+                    onerror: function (error) {
+                        if (confirm("Error! " + error + "\n\nRetry?")) {
+                            request();
                         } else {
-                            loadLetters(context, SID);
+                            context.bottomScreen.removeChild(loadScreen);
                         }
-                    } else {
-                        alert("Error! Request returned " + xhr.status + "!");
                     }
-                }
-            };
-            xhr.send(JSON.stringify({
-                action: 'new_letter',
-                letter: serialiseLetter()
-            }));
+                });
+            }());
         };
 
         colourButton.onclick = function () {
@@ -432,24 +496,16 @@
 
     // Loads letter for letter view screen
     function loadLetter(context, letterID, SID) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api.php?action=letter&id=' + letterID + '&' + SID);
-        
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        viewLetter(context, data.letter);
-                    }
-                } else {
-                    alert("Error! Request returned " + xhr.status + "!");
-                }
+        getRequest({
+            message: {
+                action: 'letter',
+                id: letterID
+            },
+            SID: SID,
+            onsuccess: function (data) {
+                viewLetter(context, data.letter);
             }
-        };
-        xhr.send();
+        });
 
         loading(context.topScreen, 'Loading letter...');
     }
@@ -536,151 +592,93 @@
                 return;
             }
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api.php?' + SID);
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
-                        } else {
-                            alert("Password changed.");
-                            newPassword.value = confirmNewPassword.value = '';
-                        }
-                    } else {
-                        alert("Error! Request returned " + xhr.status + "!");
-                    }
+            postRequest({
+                message: {
+                    action: 'change_password',
+                    new_password: newPassword.value
+                },
+                SID: SID,
+                onsuccess: function () {
+                    alert("Password changed.");
+                    newPassword.value = confirmNewPassword.value = '';
                 }
-            };
-            
-            xhr.send(JSON.stringify({
-                action: 'change_password',
-                new_password: newPassword.value
-            }));
+            });
         };
 
         logoutButton.onclick = function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api.php?' + SID);
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
-                        } else {
-                            window.location.reload();
-                        }
-                    } else {
-                        alert("Error! Request returned " + xhr.status + "!");
-                    }
+            postRequest({
+                message: {
+                    action: 'logout'
+                },
+                SID: SID,
+                onsuccess: function () {
+                    window.location.reload();
                 }
-            };
-            
-            xhr.send(JSON.stringify({
-                action: 'logout'
-            }));
+            });
         };
 
         (function refreshFriendRequests() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/api.php?action=get_friend_requests&' + SID);
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
-                        } else {
-                            if (data.requests.length === 0) {
-                                friendRequestList.innerHTML = 'You have not received any requests';
-                            } else {
-                                friendRequestList.innerHTML = '';
-                                data.requests.forEach(function (request) {
-                                    var friendRequestAccept, friendRequestDeny;
-                                    $({
-                                        tagName: 'li',
-                                        parentElement: friendRequestList,
-                                        children: [
-                                            $(request.username),
-                                            friendRequestAccept = $({
-                                                tagName: 'button',
-                                                className: 'friend-request-accept'
-                                            }),
-                                            friendRequestDeny = $({
-                                                tagName: 'button',
-                                                className: 'friend-request-deny'
-                                            })
-                                        ]
-                                    });
-                                    friendRequestAccept.onclick = friendRequestDeny.onclick = function () {
-                                        var mode = (this === friendRequestAccept) ? 'accept' : 'deny';
-
-                                        var xhr = new XMLHttpRequest();
-                                        xhr.open('POST', '/api.php?' + SID);
-
-                                        xhr.onreadystatechange = function () {
-                                            if (xhr.readyState === 4) {
-                                                if (xhr.status === 200) {
-                                                    var data = JSON.parse(xhr.responseText);
-                                                    if (data.error) {
-                                                        alert(data.error);
-                                                    } else {
-                                                        alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
-                                                        refreshFriendRequests();
-                                                    }
-                                                } else {
-                                                    alert("Error! Request returned " + xhr.status + "!");
-                                                }
-                                            }
-                                        };
-                                        
-                                        xhr.send(JSON.stringify({
-                                            action: 'friend_request_respond',
-                                            friend_user_id: request.user_id,
-                                            mode: mode
-                                        }));
-                                    };
-                                })
-                            }
-                        }
+            getRequest({
+                message: {
+                    action: 'get_friend_requests'
+                },
+                SID: SID,
+                onsuccess: function (data) {
+                    if (data.requests.length === 0) {
+                        friendRequestList.innerHTML = 'You have not received any requests';
                     } else {
-                        alert("Error! Request returned " + xhr.status + "!");
+                        friendRequestList.innerHTML = '';
+                        data.requests.forEach(function (request) {
+                            var friendRequestAccept, friendRequestDeny;
+                            $({
+                                tagName: 'li',
+                                parentElement: friendRequestList,
+                                children: [
+                                    $(request.username),
+                                    friendRequestAccept = $({
+                                        tagName: 'button',
+                                        className: 'friend-request-accept'
+                                    }),
+                                    friendRequestDeny = $({
+                                        tagName: 'button',
+                                        className: 'friend-request-deny'
+                                    })
+                                ]
+                            });
+                            friendRequestAccept.onclick = friendRequestDeny.onclick = function () {
+                                var mode = (this === friendRequestAccept) ? 'accept' : 'deny';
+
+                                postRequest({
+                                    message: {
+                                        action: 'friend_request_respond',
+                                        friend_user_id: request.user_id,
+                                        mode: mode
+                                    },
+                                    SID: SID,
+                                    onsuccess: function () {
+                                        alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
+                                        refreshFriendRequests();
+                                    }
+                                });
+                            };
+                        })
                     }
                 }
-            };
-        
-            xhr.send();
+            });
         }());
 
         addFriendButton.onclick = function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api.php?' + SID);
-    
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
-                        } else {
-                            alert("Sent friend request!");
-                            addFriendBox.value = '';
-                        }
-                    } else {
-                        alert("Error! Request returned " + xhr.status + "!");
-                    }
+            postRequest({
+                message: {
+                    action: 'add_friend',
+                    username: addFriendBox.value
+                },
+                SID: SID,
+                onsuccess: function () {
+                    alert("Sent friend request!");
+                    addFriendBox.value = '';
                 }
-            };
-            
-            xhr.send(JSON.stringify({
-                action: 'add_friend',
-                username: addFriendBox.value
-            }));
+            });
         };
         
         return friendRequests;
@@ -833,141 +831,111 @@
 
     // Makes request for list of friends then pops up a list to send a letter
     function sendLetter(letterID, context, SID) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api.php?action=get_possible_recipients&letter_id=' + letterID + '&' + SID);
+        getRequest({
+            message: {
+                action: 'get_possible_recipients',
+                letter_id: letterID
+            },
+            SID: SID,
+            onsuccess: function (data) {
+                context.bottomScreen.removeChild(loadingScreen);
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        context.bottomScreen.removeChild(loadingScreen);
-
-                        var friends, friendList, sendButton, cancelButton;
-                        friends = $({
-                            parentElement: context.bottomScreen,
-                            tagName: 'div',
-                            id: 'friends',
+                var friends, friendList, sendButton, cancelButton;
+                friends = $({
+                    parentElement: context.bottomScreen,
+                    tagName: 'div',
+                    id: 'friends',
+                    children: [
+                        $({
+                            tagName: 'h2',
+                            children: [
+                                $('Send letter')
+                            ]
+                        }),
+                        friendList = $({
+                            tagName: 'ul',
+                            id: 'friend-list'
+                        }),
+                        sendButton = $({
+                            tagName: 'button',
+                            id: 'send-button',
+                            children: [
+                                $("Send")
+                            ]
+                        }),
+                        cancelButton = $({
+                            tagName: 'button',
+                            id: 'cancel-button',
+                            children: [
+                                $("Cancel")
+                            ]
+                        })
+                    ]
+                });
+                if (data.friends.length === 0) {
+                    friendList.innerHTML = 'You have no friends that haven\'t yet been sent this letter';
+                } else {
+                    friendList.innerHTML = '';
+                    data.friends.forEach(function (friend) {
+                        friend.chosen = false;
+                        $({
+                            tagName: 'li',
+                            parentElement: friendList,
                             children: [
                                 $({
-                                    tagName: 'h2',
-                                    children: [
-                                        $('Send letter')
-                                    ]
+                                    tagName: 'input',
+                                    type: 'checkbox',
+                                    checked: false,
+                                    onchange: function () {
+                                        friend.chosen = this.checked;
+                                    }
                                 }),
-                                friendList = $({
-                                    tagName: 'ul',
-                                    id: 'friend-list'
-                                }),
-                                sendButton = $({
-                                    tagName: 'button',
-                                    id: 'send-button',
-                                    children: [
-                                        $("Send")
-                                    ]
-                                }),
-                                cancelButton = $({
-                                    tagName: 'button',
-                                    id: 'cancel-button',
-                                    children: [
-                                        $("Cancel")
-                                    ]
-                                })
+                                $(friend.username)
                             ]
                         });
-                        if (data.friends.length === 0) {
-                            friendList.innerHTML = 'You have no friends that haven\'t yet been sent this letter';
-                        } else {
-                            friendList.innerHTML = '';
-                            data.friends.forEach(function (friend) {
-                                friend.chosen = false;
-                                $({
-                                    tagName: 'li',
-                                    parentElement: friendList,
-                                    children: [
-                                        $({
-                                            tagName: 'input',
-                                            type: 'checkbox',
-                                            checked: false,
-                                            onchange: function () {
-                                                friend.chosen = this.checked;
-                                            }
-                                        }),
-                                        $(friend.username)
-                                    ]
-                                });
-                            });
-                        }
-                        cancelButton.onclick = function () {
-                            context.bottomScreen.removeChild(friends);
-                        };
-                        sendButton.onclick = function () {
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('POST', '/api.php?' + SID);
-                    
-                            xhr.onreadystatechange = function () {
-                                if (xhr.readyState === 4) {
-                                    if (xhr.status === 200) {
-                                        var data = JSON.parse(xhr.responseText);
-                                        if (data.error) {
-                                            alert(data.error);
-                                        } else {
-                                            alert("Sent letter!");
-                                            context.bottomScreen.removeChild(friends);
-                                        }
-                                    } else {
-                                        alert("Error! Request returned " + xhr.status + "!");
-                                    }
-                                }
-                            };
-                            
-                            var friendIDs = [];
-                            data.friends.forEach(function (friend) {
-                                if (friend.chosen) {
-                                    friendIDs.push(friend.id);
-                                }
-                            });
-
-                            xhr.send(JSON.stringify({
-                                action: 'send_letter',
-                                letter_id: letterID,
-                                friend_ids: friendIDs
-                            }));
-                        };
-                    }
-                } else {
-                    alert("Error! Request returned " + xhr.status + "!");
+                    });
                 }
-            }
-        };
+                cancelButton.onclick = function () {
+                    context.bottomScreen.removeChild(friends);
+                };
+                sendButton.onclick = function () {
+                    var friendIDs = [];
+                    data.friends.forEach(function (friend) {
+                        if (friend.chosen) {
+                            friendIDs.push(friend.id);
+                        }
+                    });
 
-        xhr.send();
+                    postRequest({
+                        message: {
+                            action: 'send_letter',
+                            letter_id: letterID,
+                            friend_ids: friendIDs
+                        },
+                        SID: SID,
+                        onsuccess: function () {
+                            alert("Sent letter!");
+                            context.bottomScreen.removeChild(friends);
+                        }
+                    });
+                };
+            }
+        });
 
         var loadingScreen = loading(context.bottomScreen, 'Loading friends list...');
     }
 
     // Makes request for letters then switches to letter browsing screen when done
     function loadLetters(context, SID) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api.php?action=letters&' + SID);
-        
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        browse(context, data.letters, SID);
-                    }
-                } else {
-                    alert("Error! Request returned " + xhr.status + "!");
-                }
+        getRequest({
+            message: {
+                action: 'letters'
+            },
+            SID: SID,
+            onsuccess: function (data) {
+                browse(context, data.letters, SID);
             }
-        };
-        xhr.send();
+        });
 
         loading(context.bottomScreen, 'Loading letters...');
     }
@@ -1058,53 +1026,29 @@
         });
 
         registerBtn.onclick = function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api.php');
-            
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
-                        } else {
-                            alert("Registration successful. Now try to log in.");
-                        }
-                    } else {
-                        alert("Error! Request returned " + xhr.status + "!");
-                    }
+            postRequest({
+                message: {
+                    action: 'register',
+                    username: username.value,
+                    password: password.value
+                },
+                onsuccess: function () {
+                    alert("Registration successful. Now try to log in.");
                 }
-            };
-            xhr.send(JSON.stringify({
-                action: 'register',
-                username: username.value,
-                password: password.value
-            }));
+            });
         };
 
         loginBtn.onclick = function () {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api.php');
-            
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        var data = JSON.parse(xhr.responseText);
-                        if (data.error) {
-                            alert(data.error);
-                        } else {
-                            loadLetters(context, data.SID);
-                        }
-                    } else {
-                        alert("Error! Request returned " + xhr.status + "!");
-                    }
+            postRequest({
+                message: {
+                    action: 'login',
+                    username: username.value,
+                    password: password.value
+                },
+                onsuccess: function (data) {
+                    loadLetters(context, data.SID);
                 }
-            };
-            xhr.send(JSON.stringify({
-                action: 'login',
-                username: username.value,
-                password: password.value
-            }));
+            });
         };
     }
 
