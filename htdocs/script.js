@@ -951,19 +951,31 @@
                 $({
                     tagName: 'h1',
                     children: [
-                        $('PictoSwap')
+                        $({
+                            tagName: 'img',
+                            src: 'res/logo.png',
+                            alt: 'PictoSwap'
+                        })
                     ]
                 }),
                 $({
                     tagName: 'p',
                     children: [
-                        $('With PictoSwap, you can draw messages and send them to your friends on other 3DS systems!'),
+                        $('Draw messages on your 3DS and send them to your friends!'),
                     ]
                 }),
                 $({
                     tagName: 'p',
                     children: [
-                        $('Follow '),
+                        $('Created by Andrea Faulds. '),
+                        $({
+                            tagName: 'a',
+                            href: 'https://github.com/TazeTSchnitzel/PictoSwap',
+                            children: [
+                                $('Fork me on GitHub')
+                            ]
+                        }),
+                        $('. Follow '),
                         $({
                             tagName: 'a',
                             href: 'https://twitter.com/PictoSwap',
@@ -971,19 +983,7 @@
                                 $('@PictoSwap')
                             ]
                         }),
-                        $(' on Twitter for updates!')
-                    ]
-                }),
-                $({
-                    tagName: 'p',
-                    children: [
-                        $({
-                            tagName: 'a',
-                            href: 'https://github.com/TazeTSchnitzel/PictoSwap',
-                            children: [
-                                $('By Andrea Faulds, 2013-2014. Fork me on GitHub.')
-                            ]
-                        })
+                        $(' for updates!')
                     ]
                 })
             ]

@@ -6,6 +6,7 @@ user_init();
 ?><!doctype html>
 <meta charset=utf-8>
 <title>PictoSwap</title>
+<link rel="shortcut icon" href=favicon.ico>
 
 <link rel=stylesheet href=style.css>
 

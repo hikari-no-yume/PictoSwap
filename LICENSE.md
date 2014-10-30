@@ -3,6 +3,8 @@ LICENSE
 
 Icons are based on Batch icons, see `License.Batch.txt`.
 
+Logo and favicon contributed by [Toyoharu](http://www.reddit.com/r/3DS/comments/2kdcys/pictoswap_updates_i_need_a_logo_and_more_message/cln1z74?context=6), © 2014 Toyoharu.
+
 PictoSwap © 2013-2014 Andrea Faulds except where otherwise noted.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
