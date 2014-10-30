@@ -72,7 +72,50 @@
         makeRequest(options);
     }
 
-    function compose(context, SID) {
+    var backgrounds = [
+        'green-letter.png',
+        'postcard.png',
+        'ripped-notepad.png',
+        'fruits.png',
+        'blackboard.png'
+    ];
+    function chooseBackground(context, SID) {
+        var chooser = $({
+            tagName: 'div',
+            id: 'background-chooser',
+            parentElement: context.bottomScreen,
+            children: [
+                $({
+                    tagName: 'h2',
+                    children: [
+                        $('Choose a background')
+                    ]
+                }),
+                $({
+                    tagName: 'ul',
+                    children: backgrounds.map(function (filename) {
+                        return $({
+                            tagName: 'li',
+                            children: [
+                                $({
+                                    tagName: 'img',
+                                    className: 'background-choice',
+                                    src: 'backgrounds/' + filename,
+                                    alt: filename + ' background',
+                                    onclick: function () {
+                                        context.bottomScreen.removeChild(chooser);
+                                        compose(filename, context, SID);
+                                    }
+                                })
+                            ]
+                        });
+                    })
+                })
+            ]
+        });
+    }
+
+    function compose(pageBackground, context, SID) {
         var inkMeter = new PictoSwap.InkMeter(20000, 20000),
             colourPicker = new PictoSwap.ColourPicker(),
             canvas = new PictoSwap.Canvas(308, 168),
@@ -194,7 +237,6 @@
 
         var pages = [[], [], [], []], pageInkUsage = [0, 0, 0, 0],
             page = 0, pageCount = 4, inkUsage = 0, empty = true;
-        var pageBackground = 'green-letter.png';
         var drawing = false, drawColour = 'black', lastX = 0, lastY = 0;
 
         previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
@@ -795,7 +837,7 @@
         }
 
         composeButton.onclick = function () {
-            compose(context, SID);
+            chooseBackground(context, SID);
         };
         
         friendsButton.onclick = function () {

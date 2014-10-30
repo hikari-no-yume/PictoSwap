@@ -400,7 +400,7 @@ body {
     border-color: lime;
 }
 
-#friends {
+#friends, #background-chooser {
     position: absolute;
     top: 0;
     left: 0;
@@ -413,7 +413,7 @@ body {
     overflow-y: scroll;
 }
 
-#friends h2 {
+#friends h2, #background-chooser h2 {
     margin: 2px;
     font-size: 14pt;
     font-family: sans-serif;
@@ -422,6 +422,25 @@ body {
 #friends-list {
     padding-left: 20px;
     list-style-type: square;
+}
+
+#background-chooser ul {
+    padding: 0;
+    list-style-type: none;
+}
+
+#background-chooser li {
+    display: inline-block;
+    width: 33%;
+}
+
+.background-choice {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.background-choice:hover {
+    cursor: pointer;
 }
 
 #send-button, #cancel-button, #logout-button, #change-password-button {
