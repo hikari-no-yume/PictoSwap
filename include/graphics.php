@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
 require_once 'constants.php';
 
 // From http://www.brandonheyer.com/2013/03/27/convert-hsl-to-rgb-and-rgb-to-hsl-via-php/
-function hslToRgb( $h, $s, $l ){
+function hslToRgb( float $h, float $s, float $l ): array {
     $r;
     $g;
     $b;
@@ -45,7 +46,7 @@ function hslToRgb( $h, $s, $l ){
     return array( floor( $r ), floor( $g ), floor( $b ) );
 }
 
-function CSSColourToGd(&$colourCache, $image, $colour) {
+function CSSColourToGd(array &$colourCache, $image, string $colour) {
     if (array_key_exists($colour, $colourCache)) {
         return $colourCache[$colour];
     }
@@ -68,7 +69,7 @@ function CSSColourToGd(&$colourCache, $image, $colour) {
     }
 }
 
-function renderLetterPreviews($letter) {
+function renderLetterPreviews(StdClass $letter) {
     $pageImages = [];
 
     $background = imageCreateFromPNG('backgrounds/' . $letter->background);
@@ -85,11 +86,11 @@ function renderLetterPreviews($letter) {
                 $colour = CSSColourToGd($colourCache, $image, $segment->colour);
                 switch ($segment->type) {
                     case 'dot':
-                        imageFilledRectangle($image, $segment->x - 1.5, $segment->y - 1.5, $segment->x + 1.5, $segment->y + 1.5, $colour);
+                        imageFilledRectangle($image, (int)($segment->x - 1.5), (int)($segment->y - 1.5), (int)($segment->x + 1.5), (int)($segment->y + 1.5), $colour);
                     break;
                     case 'line':
                         imageSetThickness($image, 3);
-                        imageLine($image, $segment->from_x, $segment->from_y, $segment->x, $segment->y, $colour);
+                        imageLine($image, (int)$segment->from_x, (int)$segment->from_y, (int)$segment->x, (int)$segment->y, $colour);
                     break;
                 }
             }
