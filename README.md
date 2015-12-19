@@ -14,7 +14,7 @@ How do I set it up on the server?
 Basic requirements
 ------------------
 
-PHP 7.0 with Gd, PDO and SQLite3 (for Ubuntu/Debian users: `sudo apt-get install php5 php5-gd php5-sqlite3`)
+PHP 7.0 with Gd, PDO and SQLite3 (for Ubuntu systems with [Ondřej Surý's PPA](https://launchpad.net/~ondrej/+archive/ubuntu/php-7.0): `sudo apt-get install php7.0 php7.0-gd php7.0-sqlite3`)
 
 Setup
 -----
