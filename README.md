@@ -14,9 +14,7 @@ How do I set it up on the server?
 Basic requirements
 ------------------
 
-PHP 5.4 with Gd, PDO and SQLite3 (for Ubuntu/Debian users: `sudo apt-get install php5 php5-gd php5-sqlite3`)
-
-PHP 5.5 preferred, as it can use the native versions of the `password_hash` function family. For 5.4 support, the password_compat library is included at `/include/password_compat.php`, and is used if `password_hash` is not natively supported.
+PHP 7.0 with Gd, PDO and SQLite3 (for Ubuntu/Debian users: `sudo apt-get install php5 php5-gd php5-sqlite3`)
 
 Setup
 -----

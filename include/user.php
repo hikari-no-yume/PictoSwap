@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 require_once 'db.php';
-require_once 'password_compat.php';
 require_once 'graphics.php';
 
 // Initialises session etc.
