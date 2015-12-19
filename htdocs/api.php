@@ -12,11 +12,7 @@ function respond(array $obj) {
 
 // POST requests send a JSON body with request details
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!empty($HTTP_RAW_POST_DATA)) {
-        $data = $HTTP_RAW_POST_DATA;
-    } else {
-        $data = file_get_contents('php://input');
-    }
+    $data = file_get_contents('php://input');
     if ($data === FALSE) {
         die("file_get_contents failed");
     }
