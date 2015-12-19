@@ -5,7 +5,7 @@ require_once '../include/user.php';
 
 user_init();
 
-function respond($obj) {
+function respond(array $obj) {
     header('Content-Type: application/json');
     echo json_encode($obj);
 }

@@ -5,10 +5,6 @@ require_once 'constants.php';
 
 // From http://www.brandonheyer.com/2013/03/27/convert-hsl-to-rgb-and-rgb-to-hsl-via-php/
 function hslToRgb( float $h, float $s, float $l ): array {
-    $r;
-    $g;
-    $b;
- 
     $c = ( 1 - abs( 2 * $l - 1 ) ) * $s;
     $x = $c * ( 1 - abs( fmod( ( $h / 60 ), 2 ) - 1 ) );
     $m = $l - ( $c / 2 );
@@ -65,11 +61,11 @@ function CSSColourToGd(array &$colourCache, $image, string $colour) {
         $saturation = ((float)rtrim(ltrim($saturation), '%')) / 100;
         $lightness = ((float)rtrim(ltrim($lightness), '%')) / 100;
         list($red, $green, $blue) = hslToRgb($hue, $saturation, $lightness);
-        return $colourCache[$colour] = imageColorAllocate($image, $red, $green, $blue);
+        return $colourCache[$colour] = imageColorAllocate($image, (int)$red, (int)$green, (int)$blue);
     }
 }
 
-function renderLetterPreviews(StdClass $letter) {
+function renderLetterPreviews(StdClass $letter): array {
     $pageImages = [];
 
     $background = imageCreateFromPNG('backgrounds/' . $letter->background);
