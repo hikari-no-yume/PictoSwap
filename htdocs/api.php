@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 
 require_once '../include/user.php';
 
 user_init();
 
-function respond($obj) {
+function respond(array $obj) {
     header('Content-Type: application/json');
     echo json_encode($obj);
 }
@@ -181,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 exit;
             }
-            $letterID = $_GET['id'];
+            $letterID = (int)$_GET['id'];
             $letter = user_get_received_letter(user_id(), $letterID);
             if ($letter === null) {
                 respond([
@@ -214,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 exit;
             }
-            $letter_id = $_GET['letter_id'];
+            $letter_id = (int)$_GET['letter_id'];
             $friends = user_get_possible_recipients(user_id(), $letter_id);
             respond([
                 'friends' => $friends,

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 require_once 'db.php';
 require_once 'password_compat.php';
@@ -16,17 +17,17 @@ function user_init() {
 }
 
 // Checks if user is logged in
-function user_logged_in() {
+function user_logged_in(): bool {
     return (isset($_SESSION['logged_in']) && $_SESSION['logged_in']);
 }
 
 // Gets user ID of logged in user
-function user_id() {
-    return $_SESSION['user_id'];
+function user_id(): int {
+    return (int)$_SESSION['user_id'];
 }
 
 // Finds out if a user with the given username exists
-function user_exists($username) {
+function user_exists(string $username): bool {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -41,11 +42,11 @@ function user_exists($username) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     // If 0 rows, no such user exists -> false
     // If 1 row, user exists -> true
-    return !!($row['COUNT(*)']);
+    return (bool)($row['COUNT(*)']);
 }
 
 // Finds out if a user with the given ID exists
-function user_id_exists($user_id) {
+function user_id_exists(int $user_id): bool {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -60,11 +61,11 @@ function user_id_exists($user_id) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     // If 0 rows, no such user exists -> false
     // If 1 row, user exists -> true
-    return !!($row['COUNT(*)']);
+    return (bool)($row['COUNT(*)']);
 }
 
 // Returns the ID of the user with the given username, or NULL if none
-function user_find_id($username) {
+function user_find_id(string $username) {
     $db = connectDB();
     
     // Look up user
@@ -91,7 +92,7 @@ function user_find_id($username) {
 
 // Changes a user's password
 // Return value of TRUE indicates success, otherwise string error returned
-function user_change_password($user_id, $new_password) {
+function user_change_password(int $user_id, string $new_password) {
     $db = connectDB();
     $password_hash = password_hash($new_password, PASSWORD_BCRYPT);
 
@@ -116,7 +117,7 @@ function user_change_password($user_id, $new_password) {
 
 // Registers a user
 // Return value of TRUE indicates success, otherwise string error returned
-function user_register($username, $password) {
+function user_register(string $username, string $password) {
     if (user_exists($username)) {
         return "There is already a user with that username";
     }
@@ -148,7 +149,7 @@ function user_register($username, $password) {
 
 // Logs in a user
 // Return value of TRUE indicates success, otherwise string error returned
-function user_login($username, $password) {
+function user_login(string $username, string $password) {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -172,7 +173,7 @@ function user_login($username, $password) {
         return "Incorrect password.";
     }
     $_SESSION['logged_in'] = TRUE;
-    $_SESSION['user_id'] = $rows[0]['user_id'];
+    $_SESSION['user_id'] = (int)$rows[0]['user_id'];
     $_SESSION['username'] = $username;
     return TRUE;
 }
@@ -184,7 +185,7 @@ function user_logout() {
 
 // Sends a user's letter to the specified recipients
 // Return value of TRUE indicates success, otherwise string error returned
-function user_send_letter($user_id, $letter_id, array $friend_ids) {
+function user_send_letter(int $user_id, int $letter_id, array $friend_ids) {
     $db = connectDB();
 
     // Check there is such a letter
@@ -227,11 +228,9 @@ function user_send_letter($user_id, $letter_id, array $friend_ids) {
     return TRUE;
 }
 
-
-
 // Adds a new letter for a user
 // Return value of TRUE indicated success, otherwise string error returned
-function user_new_letter($user_id, $letter) {
+function user_new_letter(int $user_id, StdClass $letter) {
     $images = renderLetterPreviews($letter);
 
     $db = connectDB();
@@ -269,7 +268,7 @@ function user_new_letter($user_id, $letter) {
 }
 
 // Gets array of user's letters, most recent first
-function user_get_received_letters($user_id) {
+function user_get_received_letters(int $user_id): array {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -298,14 +297,21 @@ function user_get_received_letters($user_id) {
         ':user_id' => $user_id
     ]);
     $letters = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($letters as &$letter) {
-        $letter['own'] = ((int)$letter['from_id'] === (int)user_id());
-    }
+    return array_map(function (array $letter): array {
+        return [
+            'from_id'       => (int)$letter['from_id'],
+            'from_username' => (string)$letter['from_username'],
+            'letter_id'     => (int)$letter['letter_id'],
+            'timestamp'     => $letter['timestamp'],
+            'read'          => (bool)$letter['read'],
+            'own'           => (bool)((int)$letter['from_id'] === user_id())
+        ];
+    }, $letters);
     return $letters;
 }
 
 // Gets possible recipients for a letter (friends it hasn't yet been sent to)
-function user_get_possible_recipients($user_id, $letter_id) {
+function user_get_possible_recipients(int $user_id, int $letter_id): array {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -347,11 +353,16 @@ function user_get_possible_recipients($user_id, $letter_id) {
         ':letter_id' => $letter_id
     ]);
     $friends = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return $friends;
+    return array_map(function (array $friend): array {
+        return [
+            'id'            => (int)$friend['id'],
+            'username'      => (string)$friend['username']
+        ];
+    }, $friends);
 }
 
 // Gets a letter received by a user
-function user_get_received_letter($user_id, $letter_id) {
+function user_get_received_letter(int $user_id, int $letter_id): array {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -401,15 +412,21 @@ function user_get_received_letter($user_id, $letter_id) {
             ':letter_id' => $letter_id
         ]);
 
-        $letter['own'] = ((int)$letter['from_id'] === (int)user_id());
-        $letter['content'] = json_decode($letter['content']);
-        return $letter;
+        return [
+            'from_id'           => (int)$letter['from_id'],
+            'from_username'     => (string)$letter['from_username'],
+            'letter_id'         => (int)$letter['letter_id'],
+            'timestamp'         => $letter['timestamp'],
+            'read'              => (bool)$letter['read'],
+            'own'               => (bool)((int)$letter['from_id'] === user_id()),
+            'content'           => json_decode($letter['content'])
+        ];
     }
 }
 
 // Sends a friend request
 // Return value of TRUE indicates success, otherwise string error returned
-function user_add_friend($user_id, $friend_username) {
+function user_add_friend(int $user_id, string $friend_username) {
     $db = connectDB();
     
     // Look up user
@@ -473,7 +490,7 @@ function user_add_friend($user_id, $friend_username) {
 }
 
 // Gets friend requests as an array
-function user_get_friend_requests($user_id) {
+function user_get_friend_requests(int $user_id): array {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -496,12 +513,17 @@ function user_get_friend_requests($user_id) {
         ':user_id_2' => $user_id
     ]);
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return $requests;    
+    return array_map(function (array $request): array {
+        return [
+            'user_id'       => (int)$request['user_id'],
+            'username'      => (string)$request['username']
+        ];
+    }, $requests);
 }
 
 // Responds to a friend request ($mode is 'accept' to accept, 'deny' to deny)
 // Return value of TRUE indicates success, otherwise string error returned
-function user_friend_request_respond($user_id, $friend_user_id, $mode) {
+function user_friend_request_respond(int $user_id, int $friend_user_id, string $mode) {
     $db = connectDB();
     
     // Check user exists

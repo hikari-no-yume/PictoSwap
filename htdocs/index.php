@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 require_once '../include/user.php';
 user_init();

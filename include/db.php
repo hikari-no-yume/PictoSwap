@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-function connectDB() {
+function connectDB(): PDO {
     static $PDO = null;
     if ($PDO === null) {
         $PDO = new PDO('sqlite:../pictoswap.sqlite');
