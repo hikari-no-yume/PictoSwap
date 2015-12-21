@@ -1,9 +1,6 @@
 <?php
 declare(strict_types=1);
 
-require_once 'db.php';
-require_once 'graphics.php';
-
 // Initialises session etc.
 function user_init() {
     global $SID_CONSTANT;

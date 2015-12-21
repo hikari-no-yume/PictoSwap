@@ -1,0 +1,15 @@
+{
+    "require": {
+        "php": "^7.0",
+        "ext-pdo": "*",
+        "ext-gd": "*"
+    },
+    "autoload": {
+        "files": [
+            "include/constants.php",
+            "include/db.php",
+            "include/graphics.php",
+            "include/user.php"
+        ]
+    }
+}

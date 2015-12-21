@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-require_once 'constants.php';
-
 // From http://www.brandonheyer.com/2013/03/27/convert-hsl-to-rgb-and-rgb-to-hsl-via-php/
 function hslToRgb( float $h, float $s, float $l ): array {
     $c = ( 1 - abs( 2 * $l - 1 ) ) * $s;

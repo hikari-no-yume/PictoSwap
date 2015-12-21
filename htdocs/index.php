@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once '../include/user.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 user_init();
 
 ?><!doctype html>

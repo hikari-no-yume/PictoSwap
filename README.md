@@ -20,4 +20,5 @@ Setup
 -----
 
 1. Create the SQLite3 database at `/pictoswap.sqlite` using the schema in `/schema.sql`. This should also be writeable.
-2. Point your webserver (nginx preferred ;) at `/htdocs/`, and make sure `/htdocs/previews/` is writeable.
+2. Set up autoloading with `composer install` in the root of this repository. ([Get Composer here](https://getcomposer.org/))
+3. Point your webserver (nginx preferred ;) at `/htdocs/`, and make sure `/htdocs/previews/` is writeable.
