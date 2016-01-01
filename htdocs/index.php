@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace ajf\PictoSwap;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-user_init();
+initSession();
 
 ?><!doctype html>
 <meta charset=utf-8>
@@ -22,7 +22,7 @@ user_init();
 <script>
 window.PictoSwap = window.PictoSwap || {};
 window.PictoSwap.userData = <?=json_encode([
-    'logged_in' => user_logged_in(),
+    'logged_in' => isUserLoggedIn(),
     'SID' => $SID_CONSTANT
 ])?>;
 </script>

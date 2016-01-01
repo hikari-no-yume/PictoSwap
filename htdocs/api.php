@@ -5,7 +5,7 @@ namespace ajf\PictoSwap;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-user_init();
+initSession();
 
 function respond(array $obj, int $statusCode = NULL) {
     header('Content-Type: application/json');
@@ -19,7 +19,7 @@ function respond(array $obj, int $statusCode = NULL) {
 }
 
 function ensureLoggedIn() {
-    if (!user_logged_in()) {
+    if (!isUserLoggedIn()) {
         respond([
             'error' => "User is not logged in!"
         ], 403);
@@ -46,13 +46,13 @@ try {
         }
         switch ($data->action) {
             case 'new_letter':
-                $user_id = user_id();
+                $user_id = getSessionUserId();
                 user_new_letter($user_id, $data->letter);
                 respondOk(201);
             break;
             case 'send_letter':
                 ensureLoggedIn();
-                $user_id = user_id();
+                $user_id = getSessionUserId();
                 $letter_id = $data->letter_id;
                 $friend_ids = $data->friend_ids;
                 user_send_letter($user_id, $letter_id, $friend_ids);
@@ -60,13 +60,13 @@ try {
             break; 
             case 'add_friend':
                 ensureLoggedIn();
-                $user_id = user_id();
+                $user_id = getSessionUserId();
                 user_add_friend($user_id, $data->username);
                 respondOk(201);
             break;
             case 'friend_request_respond':
                 ensureLoggedIn();
-                $user_id = user_id();
+                $user_id = getSessionUserId();
                 user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
                 respondOk();
             break;
@@ -76,19 +76,20 @@ try {
             break;
             case 'change_password':
                 ensureLoggedIn();
-                $user_id = user_id(); 
+                $user_id = getSessionUserId(); 
                 user_change_password($user_id, $data->new_password);
                 respondOk();
             break; 
             case 'login':
-                user_login($data->username, $data->password);
+                $sessionData = user_login($data->username, $data->password);
+                startUserSession($sessionData);
                 respond([
                     'error' => null,
                     'SID' => $SID_CONSTANT
                 ]);
             break;
             case 'logout':
-                user_logout();
+                endUserSession();
                 respondOk();
             break;
             default:
@@ -102,7 +103,7 @@ try {
         switch ($_GET['action']) {
             case 'letters':
                 ensureLoggedIn();
-                $letters = user_get_received_letters(user_id());
+                $letters = user_get_received_letters(getSessionUserId());
                 respond([
                     'letters' => $letters,
                     'error' => null
@@ -111,7 +112,7 @@ try {
             case 'letter':
                 ensureLoggedIn();
                 $letterID = (int)$_GET['id'];
-                $letter = user_get_received_letter(user_id(), $letterID);
+                $letter = user_get_received_letter(getSessionUserId(), $letterID);
                 if ($letter === null) {
                     respond([
                         'error' => 'No such letter'
@@ -125,7 +126,7 @@ try {
             break;
             case 'get_friend_requests':
                 ensureLoggedIn();
-                $requests = user_get_friend_requests(user_id());
+                $requests = user_get_friend_requests(getSessionUserId());
                 respond([
                     'requests' => $requests,
                     'error' => null
@@ -134,7 +135,7 @@ try {
             case 'get_possible_recipients':
                 ensureLoggedIn();
                 $letter_id = (int)$_GET['letter_id'];
-                $friends = user_get_possible_recipients(user_id(), $letter_id);
+                $friends = user_get_possible_recipients(getSessionUserId(), $letter_id);
                 respond([
                     'friends' => $friends,
                     'error' => null

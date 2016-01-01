@@ -5,27 +5,6 @@ namespace ajf\PictoSwap;
 
 use PDO;
 
-// Initialises session etc.
-function user_init() {
-    global $SID_CONSTANT;
-
-    if (isset($_GET['PHPSESSID'])) {
-        \session_id($_GET['PHPSESSID']);
-    }
-    \session_start();
-    $SID_CONSTANT = session_name() . '=' . session_id();
-}
-
-// Checks if user is logged in
-function user_logged_in(): bool {
-    return (isset($_SESSION['logged_in']) && $_SESSION['logged_in']);
-}
-
-// Gets user ID of logged in user
-function user_id(): int {
-    return (int)$_SESSION['user_id'];
-}
-
 // Finds out if a user with the given username exists
 function user_exists(string $username): bool {
     $db = connectDB();
@@ -142,8 +121,8 @@ function user_register(string $username, string $password) {
 }
 
 // Logs in a user
-// Return value of TRUE indicates success, otherwise string error returned
-function user_login(string $username, string $password) {
+// Returns an array containing new session data (give to startUserSession())
+function user_login(string $username, string $password): array {
     $db = connectDB();
     $stmt = $db->prepare('
         SELECT
@@ -166,14 +145,11 @@ function user_login(string $username, string $password) {
     if (!\password_verify($password, $password_hash)) {
         throw new PictoSwapException("Incorrect password.");
     }
-    $_SESSION['logged_in'] = TRUE;
-    $_SESSION['user_id'] = (int)$rows[0]['user_id'];
-    $_SESSION['username'] = $username;
-}
-
-// Logs out the user
-function user_logout() {
-    \session_destroy();
+    return [
+        'logged_in' => TRUE,
+        'user_id' => (int)$rows[0]['user_id'],
+        'username' => $username
+    ];
 }
 
 // Sends a user's letter to the specified recipients
@@ -292,7 +268,7 @@ function user_get_received_letters(int $user_id): array {
             'letter_id'     => (int)$letter['letter_id'],
             'timestamp'     => $letter['timestamp'],
             'read'          => (bool)$letter['read'],
-            'own'           => (bool)((int)$letter['from_id'] === user_id())
+            'own'           => (bool)((int)$letter['from_id'] === getSessionUserId())
         ];
     }, $letters);
     return $letters;
@@ -406,7 +382,7 @@ function user_get_received_letter(int $user_id, int $letter_id): array {
             'letter_id'         => (int)$letter['letter_id'],
             'timestamp'         => $letter['timestamp'],
             'read'              => (bool)$letter['read'],
-            'own'               => (bool)((int)$letter['from_id'] === user_id()),
+            'own'               => (bool)((int)$letter['from_id'] === getSessionUserId()),
             'content'           => \json_decode($letter['content'])
         ];
     }
