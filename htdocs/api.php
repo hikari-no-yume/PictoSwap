@@ -27,6 +27,12 @@ function ensureLoggedIn() {
     }
 }
 
+function respondOk(int $statusCode = 200) {
+    respond([
+        'error' => null
+    ], $statusCode);
+}
+
 try {
     // POST requests send a JSON body with request details
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -42,9 +48,7 @@ try {
             case 'new_letter':
                 $user_id = user_id();
                 user_new_letter($user_id, $data->letter);
-                respond([
-                    'error' => null
-                ]);
+                respondOk(201);
             break;
             case 'send_letter':
                 ensureLoggedIn();
@@ -52,39 +56,29 @@ try {
                 $letter_id = $data->letter_id;
                 $friend_ids = $data->friend_ids;
                 user_send_letter($user_id, $letter_id, $friend_ids);
-                respond([
-                    'error' => null
-                ]);
+                respondOk();
             break; 
             case 'add_friend':
                 ensureLoggedIn();
                 $user_id = user_id();
                 user_add_friend($user_id, $data->username);
-                respond([
-                    'error' => null
-                ]);
+                respondOk(201);
             break;
             case 'friend_request_respond':
                 ensureLoggedIn();
                 $user_id = user_id();
                 user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
-                respond([
-                    'error' => null
-                ]);
+                respondOk();
             break;
             case 'register':
                 user_register($data->username, $data->password);
-                respond([
-                    'error' => null
-                ]);
+                respondOk(201);
             break;
             case 'change_password':
                 ensureLoggedIn();
                 $user_id = user_id(); 
                 user_change_password($user_id, $data->new_password);
-                respond([
-                    'error' => null
-                ]);
+                respondOk();
             break; 
             case 'login':
                 user_login($data->username, $data->password);
@@ -95,14 +89,12 @@ try {
             break;
             case 'logout':
                 user_logout();
-                respond([
-                    'error' => null
-                ]);
+                respondOk();
             break;
             default:
                 respond([
                     'error' => "Unknown POST action: '" . $data->action . "'"
-                ]);
+                ], 404);
             break;
         }
     // GET requests send request details as parameters
