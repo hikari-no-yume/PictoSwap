@@ -24,7 +24,7 @@
 
                 if (!data) {
                     onerror('Internal PictoSwap error when decoding JSON: ' + jsonError);
-                } else if (xhr.status === 200) {
+                } else if (200 <= xhr.status && xhr.status < 300) {
                     if (data.error) { 
                         onerror(data.error);
                     } else {
