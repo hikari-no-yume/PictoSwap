@@ -5,6 +5,9 @@
         "ext-gd": "*"
     },
     "autoload": {
+        "psr-4": {
+            "ajf\\PictoSwap\\": "include"
+        },
         "files": [
             "include/constants.php",
             "include/db.php",

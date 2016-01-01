@@ -91,7 +91,6 @@ function user_find_id(string $username) {
 }
 
 // Changes a user's password
-// Return value of TRUE indicates success, otherwise string error returned
 function user_change_password(int $user_id, string $new_password) {
     $db = connectDB();
     $password_hash = password_hash($new_password, PASSWORD_BCRYPT);
@@ -111,19 +110,16 @@ function user_change_password(int $user_id, string $new_password) {
         ':password_hash' => $password_hash
     ]);
     $db->commit();
-
-    return TRUE;
 }
 
 // Registers a user
-// Return value of TRUE indicates success, otherwise string error returned
 function user_register(string $username, string $password) {
     if (user_exists($username)) {
-        return "There is already a user with that username";
+        throw new PictoSwapException("There is already a user with that username");
     }
 
     if (!\preg_match(VALID_USERNAME_REGEX, $username)) {
-        return "Username can only be 3-18 characters in length, composed only of lowercase letters, numbers and underscores";
+        throw new PictoSwapException("Username can only be 3-18 characters in length, composed only of lowercase letters, numbers and underscores");
     }
 
     $db = connectDB();
@@ -143,8 +139,6 @@ function user_register(string $username, string $password) {
     ]);
     $user_id = $db->lastInsertId();
     $db->commit();
-
-    return TRUE;
 }
 
 // Logs in a user
@@ -166,16 +160,15 @@ function user_login(string $username, string $password) {
     $stmt->execute([':username' => $username]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     if (empty($rows)) {
-        return "No such user.";
+        throw new PictoSwapException("No such user.", 404);
     }
     $password_hash = $rows[0]['password_hash'];
     if (!\password_verify($password, $password_hash)) {
-        return "Incorrect password.";
+        throw new PictoSwapException("Incorrect password.");
     }
     $_SESSION['logged_in'] = TRUE;
     $_SESSION['user_id'] = (int)$rows[0]['user_id'];
     $_SESSION['username'] = $username;
-    return TRUE;
 }
 
 // Logs out the user
@@ -184,7 +177,6 @@ function user_logout() {
 }
 
 // Sends a user's letter to the specified recipients
-// Return value of TRUE indicates success, otherwise string error returned
 function user_send_letter(int $user_id, int $letter_id, array $friend_ids) {
     $db = connectDB();
 
@@ -205,7 +197,7 @@ function user_send_letter(int $user_id, int $letter_id, array $friend_ids) {
     ]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row['COUNT(*)']) {
-        return "There is no such letter with that ID owned by you.";
+        throw new PictoSwapException("There is no such letter with that ID owned by you.", 404);
     }
 
     // Actually send
@@ -224,12 +216,9 @@ function user_send_letter(int $user_id, int $letter_id, array $friend_ids) {
         ]);
     }
     $db->commit();
-
-    return TRUE;
 }
 
 // Adds a new letter for a user
-// Return value of TRUE indicated success, otherwise string error returned
 function user_new_letter(int $user_id, \StdClass $letter) {
     $images = renderLetterPreviews($letter);
 
@@ -264,7 +253,6 @@ function user_new_letter(int $user_id, \StdClass $letter) {
         \ImagePNG($images[$i], 'previews/' . $letter_id . '-' . $i . '.png');
         \ImageDestroy($images[$i]);
     }
-    return TRUE;
 }
 
 // Gets array of user's letters, most recent first
@@ -395,7 +383,7 @@ function user_get_received_letter(int $user_id, int $letter_id): array {
     ]);
     $letter = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($letter === null) {
-        return null;
+        throw new PictoSwapException("No such letter.", 404);
     } else {
         $stmt = $db->prepare('
             UPDATE
@@ -433,11 +421,11 @@ function user_add_friend(int $user_id, string $friend_username) {
     $friend_user_id = user_find_id($friend_username);
     
     if ($friend_user_id === NULL) {
-        return "No such user.";
+        throw new PictoSwapException("No such user.", 404);
     }
     
     if ($friend_user_id == $user_id) {
-        return "You cannot send a friend request to yourself.";
+        throw new PictoSwapException("You cannot send a friend request to yourself.", 400);
     }
     
     // Check they're not already friends
@@ -462,12 +450,12 @@ function user_add_friend(int $user_id, string $friend_username) {
         $row = $rows[0];
         if ($row['provisional']) {
             if ($row['user_id_1'] == $user_id) {
-                return "You already sent a friend request to that user.";
+                throw new PictoSwapException("You already sent a friend request to that user.", 200);
             } else {
-                return "That user already sent you a friend request.";
+                throw new PictoSwapException("That user already sent you a friend request.", 200);
             }
         } else {
-            return "You are already friends with that user.";
+            throw new PictoSwapException("You are already friends with that user.", 200);
         }
     }
     
@@ -485,8 +473,6 @@ function user_add_friend(int $user_id, string $friend_username) {
         ':user_id_2' => $friend_user_id
     ]);
     $db->commit();
-
-    return TRUE;
 }
 
 // Gets friend requests as an array
@@ -522,13 +508,12 @@ function user_get_friend_requests(int $user_id): array {
 }
 
 // Responds to a friend request ($mode is 'accept' to accept, 'deny' to deny)
-// Return value of TRUE indicates success, otherwise string error returned
 function user_friend_request_respond(int $user_id, int $friend_user_id, string $mode) {
     $db = connectDB();
     
     // Check user exists
     if (!user_id_exists($friend_user_id)) {
-        return "No such user.";
+        throw new PictoSwapException("No such user.", 404);
     }
     
     // Check there is such a friend request
@@ -552,7 +537,7 @@ function user_friend_request_respond(int $user_id, int $friend_user_id, string $
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     if (!$rows[0]['COUNT(*)']) {
-        return "No such friend request.";
+        throw new PictoSwapException("No such friend request.", 404);
     }
     
     // Actually accept/deny the request
@@ -573,8 +558,6 @@ function user_friend_request_respond(int $user_id, int $friend_user_id, string $
             ':user_id_2' => $user_id
         ]);
         $db->commit();
-    
-        return TRUE;
     } else if ($mode === 'deny') {
         $db->beginTransaction();
         $stmt = $db->prepare('
@@ -590,9 +573,7 @@ function user_friend_request_respond(int $user_id, int $friend_user_id, string $
             ':user_id_2' => $user_id
         ]);
         $db->commit();
-
-        return TRUE;
     } else {
-        return "The \"$mode\" mode is not supported.";
+        throw new PictoSwapException("The \"$mode\" mode is not supported.", 400);
     }
 }

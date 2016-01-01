@@ -41,99 +41,57 @@ try {
         switch ($data->action) {
             case 'new_letter':
                 $user_id = user_id();
-                $error = user_new_letter($user_id, $data->letter);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_new_letter($user_id, $data->letter);
+                respond([
+                    'error' => null
+                ]);
             break;
             case 'send_letter':
                 ensureLoggedIn();
                 $user_id = user_id();
                 $letter_id = $data->letter_id;
                 $friend_ids = $data->friend_ids;
-                $error = user_send_letter($user_id, $letter_id, $friend_ids);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_send_letter($user_id, $letter_id, $friend_ids);
+                respond([
+                    'error' => null
+                ]);
             break; 
             case 'add_friend':
                 ensureLoggedIn();
                 $user_id = user_id();
-                $error = user_add_friend($user_id, $data->username);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_add_friend($user_id, $data->username);
+                respond([
+                    'error' => null
+                ]);
             break;
             case 'friend_request_respond':
                 ensureLoggedIn();
                 $user_id = user_id();
-                $error = user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
+                respond([
+                    'error' => null
+                ]);
             break;
             case 'register':
-                $error = user_register($data->username, $data->password);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_register($data->username, $data->password);
+                respond([
+                    'error' => null
+                ]);
             break;
             case 'change_password':
                 ensureLoggedIn();
                 $user_id = user_id(); 
-                $error = user_change_password($user_id, $data->new_password);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_change_password($user_id, $data->new_password);
+                respond([
+                    'error' => null
+                ]);
             break; 
             case 'login':
-                $error = user_login($data->username, $data->password);
-                if ($error === TRUE) {
-                    respond([
-                        'error' => null,
-                        'SID' => $SID_CONSTANT
-                    ]);
-                } else {
-                    respond([
-                        'error' => $error
-                    ]);
-                }
+                user_login($data->username, $data->password);
+                respond([
+                    'error' => null,
+                    'SID' => $SID_CONSTANT
+                ]);
             break;
             case 'logout':
                 user_logout();
@@ -200,9 +158,15 @@ try {
         die("Unsupported request method: " . $_SERVER['REQUEST_METHOD']);
     }
 } catch (\Throwable $e) {
-    $error = "Caught error type " . $e->getCode() . ": " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine() . "\n" . $e->getTraceAsString();
-    respond([
-        'error' => "Internal PictoSwap error.\n\n" . $error
-    ], 500);
-    error_log($error);
+    if ($e instanceof PictoSwapException) {
+        respond([
+            'error' => $e->getMessage()
+        ], $e->getStatusCode());
+    } else {
+        $error = "Caught error type " . $e->getCode() . ": " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine() . "\n" . $e->getTraceAsString();
+        respond([
+            'error' => "Internal PictoSwap error.\n\n" . $error
+        ], 500);
+        error_log($error);
+    }
 }
