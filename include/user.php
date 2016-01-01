@@ -1,14 +1,18 @@
 <?php
 declare(strict_types=1);
 
+namespace ajf\PictoSwap;
+
+use PDO;
+
 // Initialises session etc.
 function user_init() {
     global $SID_CONSTANT;
 
     if (isset($_GET['PHPSESSID'])) {
-        session_id($_GET['PHPSESSID']);
+        \session_id($_GET['PHPSESSID']);
     }
-    session_start();
+    \session_start();
     $SID_CONSTANT = session_name() . '=' . session_id();
 }
 
@@ -118,12 +122,12 @@ function user_register(string $username, string $password) {
         return "There is already a user with that username";
     }
 
-    if (!preg_match(VALID_USERNAME_REGEX, $username)) {
+    if (!\preg_match(VALID_USERNAME_REGEX, $username)) {
         return "Username can only be 3-18 characters in length, composed only of lowercase letters, numbers and underscores";
     }
 
     $db = connectDB();
-    $password_hash = password_hash($password, PASSWORD_BCRYPT);
+    $password_hash = \password_hash($password, PASSWORD_BCRYPT);
 
     $db->beginTransaction();
     $stmt = $db->prepare('
@@ -165,7 +169,7 @@ function user_login(string $username, string $password) {
         return "No such user.";
     }
     $password_hash = $rows[0]['password_hash'];
-    if (!password_verify($password, $password_hash)) {
+    if (!\password_verify($password, $password_hash)) {
         return "Incorrect password.";
     }
     $_SESSION['logged_in'] = TRUE;
@@ -176,7 +180,7 @@ function user_login(string $username, string $password) {
 
 // Logs out the user
 function user_logout() {
-    session_destroy();
+    \session_destroy();
 }
 
 // Sends a user's letter to the specified recipients
@@ -226,7 +230,7 @@ function user_send_letter(int $user_id, int $letter_id, array $friend_ids) {
 
 // Adds a new letter for a user
 // Return value of TRUE indicated success, otherwise string error returned
-function user_new_letter(int $user_id, StdClass $letter) {
+function user_new_letter(int $user_id, \StdClass $letter) {
     $images = renderLetterPreviews($letter);
 
     $db = connectDB();
@@ -257,8 +261,8 @@ function user_new_letter(int $user_id, StdClass $letter) {
     $db->commit();
 
     for ($i = 0; $i < count($images); $i++) {
-        ImagePNG($images[$i], 'previews/' . $letter_id . '-' . $i . '.png');
-        ImageDestroy($images[$i]);
+        \ImagePNG($images[$i], 'previews/' . $letter_id . '-' . $i . '.png');
+        \ImageDestroy($images[$i]);
     }
     return TRUE;
 }
@@ -293,7 +297,7 @@ function user_get_received_letters(int $user_id): array {
         ':user_id' => $user_id
     ]);
     $letters = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return array_map(function (array $letter): array {
+    return \array_map(function (array $letter): array {
         return [
             'from_id'       => (int)$letter['from_id'],
             'from_username' => (string)$letter['from_username'],
@@ -349,7 +353,7 @@ function user_get_possible_recipients(int $user_id, int $letter_id): array {
         ':letter_id' => $letter_id
     ]);
     $friends = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return array_map(function (array $friend): array {
+    return \array_map(function (array $friend): array {
         return [
             'id'            => (int)$friend['id'],
             'username'      => (string)$friend['username']
@@ -415,7 +419,7 @@ function user_get_received_letter(int $user_id, int $letter_id): array {
             'timestamp'         => $letter['timestamp'],
             'read'              => (bool)$letter['read'],
             'own'               => (bool)((int)$letter['from_id'] === user_id()),
-            'content'           => json_decode($letter['content'])
+            'content'           => \json_decode($letter['content'])
         ];
     }
 }

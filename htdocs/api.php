@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace ajf\PictoSwap;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 user_init();
@@ -12,12 +14,12 @@ function respond(array $obj) {
 
 // POST requests send a JSON body with request details
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = file_get_contents('php://input');
+    $data = \file_get_contents('php://input');
     if ($data === FALSE) {
         die("file_get_contents failed");
     }
-    $data = json_decode($data);
-    if (json_last_error() !== JSON_ERROR_NONE) {
+    $data = \json_decode($data);
+    if (\json_last_error() !== \JSON_ERROR_NONE) {
         die("json_decode failed");
     }
     switch ($data->action) {
