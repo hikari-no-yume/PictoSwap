@@ -18,6 +18,15 @@ function respond(array $obj, int $statusCode = NULL) {
     echo json_encode($obj);
 }
 
+function ensureLoggedIn() {
+    if (!user_logged_in()) {
+        respond([
+            'error' => "User is not logged in!"
+        ], 403);
+        exit;
+    }
+}
+
 try {
     // POST requests send a JSON body with request details
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,12 +40,6 @@ try {
         }
         switch ($data->action) {
             case 'new_letter':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
                 $user_id = user_id();
                 $error = user_new_letter($user_id, $data->letter);
                 if ($error === TRUE) {
@@ -50,12 +53,7 @@ try {
                 }
             break;
             case 'send_letter':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $user_id = user_id();
                 $letter_id = $data->letter_id;
                 $friend_ids = $data->friend_ids;
@@ -71,12 +69,7 @@ try {
                 }
             break; 
             case 'add_friend':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $user_id = user_id();
                 $error = user_add_friend($user_id, $data->username);
                 if ($error === TRUE) {
@@ -90,12 +83,7 @@ try {
                 }
             break;
             case 'friend_request_respond':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $user_id = user_id();
                 $error = user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
                 if ($error === TRUE) {
@@ -121,12 +109,7 @@ try {
                 }
             break;
             case 'change_password':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $user_id = user_id(); 
                 $error = user_change_password($user_id, $data->new_password);
                 if ($error === TRUE) {
@@ -168,12 +151,7 @@ try {
     } else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         switch ($_GET['action']) {
             case 'letters':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $letters = user_get_received_letters(user_id());
                 respond([
                     'letters' => $letters,
@@ -181,12 +159,7 @@ try {
                 ]);
             break;
             case 'letter':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $letterID = (int)$_GET['id'];
                 $letter = user_get_received_letter(user_id(), $letterID);
                 if ($letter === null) {
@@ -201,12 +174,7 @@ try {
                 }
             break;
             case 'get_friend_requests':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $requests = user_get_friend_requests(user_id());
                 respond([
                     'requests' => $requests,
@@ -214,12 +182,7 @@ try {
                 ]);
             break;
             case 'get_possible_recipients':
-                if (!user_logged_in()) {
-                    respond([
-                        'error' => "User is not logged in!"
-                    ]);
-                    exit;
-                }
+                ensureLoggedIn();
                 $letter_id = (int)$_GET['letter_id'];
                 $friends = user_get_possible_recipients(user_id(), $letter_id);
                 respond([
