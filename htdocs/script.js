@@ -8,28 +8,32 @@
 
     // Makes a request internal to GET/POST
     function makeRequest(options) {
+        var onerror = options.onerror || alert;
+
         var xhr = new XMLHttpRequest();
         xhr.open(options.method, options.url);
         
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
+                var data = null,
+                    jsonError = 'null response';
+                try {
                     var data = JSON.parse(xhr.responseText);
+                } catch (jsonError) {
+                }
+
+                if (!data) {
+                    onerror('Internal PictoSwap error when decoding JSON: ' + jsonError);
+                } else if (xhr.status === 200) {
                     if (data.error) { 
-                        if (options.hasOwnProperty('onerror')) {
-                            options.onerror(data.error);
-                        } else {
-                            alert(data.error);
-                        }
+                        onerror(data.error);
                     } else {
                         options.onsuccess(data);
                     }
+                } else if (data.error) {
+                    onerror(data.error);
                 } else {
-                    if (options.hasOwnProperty('onerror')) {
-                        options.onerror("Request returned " + xhr.status + " " + xhr.statusText);
-                    } else {
-                        alert("Error! Request returned " + xhr.status + " " + xhr.statusText + "!");
-                    }
+                    onerror("Request returned " + xhr.status + " " + xhr.statusText);
                 }
             }
         };
