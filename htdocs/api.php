@@ -34,6 +34,12 @@ function respondOk(int $statusCode = 200) {
 }
 
 try {
+    $db = connectDb();
+    $manager = new UserManager($db);
+    if (isUserLoggedIn()) {
+        $user = new User($db, $manager, getSessionUserId());
+    }
+
     // POST requests send a JSON body with request details
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data = \file_get_contents('php://input');
@@ -46,42 +52,37 @@ try {
         }
         switch ($data->action) {
             case 'new_letter':
-                $user_id = getSessionUserId();
-                user_new_letter($user_id, $data->letter);
+                $user->newLetter($data->letter);
                 respondOk(201);
             break;
             case 'send_letter':
                 ensureLoggedIn();
-                $user_id = getSessionUserId();
                 $letter_id = $data->letter_id;
                 $friend_ids = $data->friend_ids;
-                user_send_letter($user_id, $letter_id, $friend_ids);
+                $user->sendLetter($letter_id, $friend_ids);
                 respondOk();
             break; 
             case 'add_friend':
                 ensureLoggedIn();
-                $user_id = getSessionUserId();
-                user_add_friend($user_id, $data->username);
+                $user->addFriend($data->username);
                 respondOk(201);
             break;
             case 'friend_request_respond':
                 ensureLoggedIn();
-                $user_id = getSessionUserId();
-                user_friend_request_respond($user_id, $data->friend_user_id, $data->mode);
+                $user->respondToFriendRequest($data->friend_user_id, $data->mode);
                 respondOk();
             break;
             case 'register':
-                user_register($data->username, $data->password);
+                $manager->register($data->username, $data->password);
                 respondOk(201);
             break;
             case 'change_password':
                 ensureLoggedIn();
-                $user_id = getSessionUserId(); 
-                user_change_password($user_id, $data->new_password);
+                $user->changePassword($data->new_password);
                 respondOk();
             break; 
             case 'login':
-                $sessionData = user_login($data->username, $data->password);
+                $sessionData = $manager->login($data->username, $data->password);
                 startUserSession($sessionData);
                 respond([
                     'error' => null,
@@ -103,7 +104,7 @@ try {
         switch ($_GET['action']) {
             case 'letters':
                 ensureLoggedIn();
-                $letters = user_get_received_letters(getSessionUserId());
+                $letters = $user->getReceivedLetters();
                 respond([
                     'letters' => $letters,
                     'error' => null
@@ -112,7 +113,7 @@ try {
             case 'letter':
                 ensureLoggedIn();
                 $letterID = (int)$_GET['id'];
-                $letter = user_get_received_letter(getSessionUserId(), $letterID);
+                $letter = $user->getReceivedLetter($letterID);
                 if ($letter === null) {
                     respond([
                         'error' => 'No such letter'
@@ -126,7 +127,7 @@ try {
             break;
             case 'get_friend_requests':
                 ensureLoggedIn();
-                $requests = user_get_friend_requests(getSessionUserId());
+                $requests = $user->getFriendRequests();
                 respond([
                     'requests' => $requests,
                     'error' => null
@@ -135,7 +136,7 @@ try {
             case 'get_possible_recipients':
                 ensureLoggedIn();
                 $letter_id = (int)$_GET['letter_id'];
-                $friends = user_get_possible_recipients(getSessionUserId(), $letter_id);
+                $friends = $user->getPossibleRecipients($letter_id);
                 respond([
                     'friends' => $friends,
                     'error' => null

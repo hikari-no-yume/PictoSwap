@@ -12,8 +12,7 @@
             "include/constants.php",
             "include/session.php",
             "include/db.php",
-            "include/graphics.php",
-            "include/user.php"
+            "include/graphics.php"
         ]
     }
 }

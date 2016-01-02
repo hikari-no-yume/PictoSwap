@@ -24,7 +24,7 @@ function getSessionUserId(): int {
 }
 
 // "Logs in" the user by setting their data in the session
-// Takes an array of session data (from user_login())
+// Takes an array of session data (from UserManager::login())
 function startUserSession(array $sessionData) {
     foreach ($sessionData as $key => $value) {
         $_SESSION[$key] = $value;
