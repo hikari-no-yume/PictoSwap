@@ -11,7 +11,7 @@ class User
     private $manager;
     private $user_id;
 
-    public function __construct(PDO $connection, UserManager $manager, int $user_id) {
+    public function __construct(PDO $connection, UserManagerInterface $manager, int $user_id) {
         $this->db = $connection;
         $this->manager = $manager;
         $this->user_id = $user_id;

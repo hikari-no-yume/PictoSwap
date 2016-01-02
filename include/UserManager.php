@@ -5,7 +5,7 @@ namespace ajf\PictoSwap;
 
 use PDO;
 
-class UserManager
+class UserManager implements UserManagerInterface
 {
     private $db;
 
