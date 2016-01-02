@@ -39,6 +39,9 @@
         };
 
         if (options.hasOwnProperty('postData')) {
+            if (options.hasOwnProperty('postType')) {
+                xhr.setRequestHeader('Content-Type', options.postType);
+            }
             xhr.send(options.postData);
         } else {
             xhr.send();
@@ -72,6 +75,7 @@
             options.url = '/api.php';
         }
         options.postData = JSON.stringify(options.message);
+        options.postType = 'application/json';
 
         makeRequest(options);
     }
