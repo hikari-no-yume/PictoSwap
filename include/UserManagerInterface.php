@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ajf
- * Date: 2016-01-02
- * Time: 22:22
- */
+declare(strict_types=1);
+
 namespace ajf\PictoSwap;
 
 interface UserManagerInterface
