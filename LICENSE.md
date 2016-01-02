@@ -5,7 +5,7 @@ Icons are based on Batch icons, see `License.Batch.txt`.
 
 Logo, favicon and the `postcard.png`, `ripped-notepad.png`, `fruits.png` and `blackboard.png` backgrounds contributed by [Toyoharu](http://www.reddit.com/r/3DS/comments/2kdcys/pictoswap_updates_i_need_a_logo_and_more_message/cln1z74?context=6), © 2014 Toyoharu.
 
-PictoSwap © 2013–2015 Andrea Faulds except where otherwise noted.
+PictoSwap © 2013–2016 Andrea Faulds except where otherwise noted.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
