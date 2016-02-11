@@ -1,5 +1,5 @@
 /* 
- * jsInsert v1.0 - https://github.com/TazeTSchnitzel/jsInsert
+ * jInsert v1.0 - https://github.com/TazeTSchnitzel/jInsert
  *
  * Code except where otherwise noted © 2013 Andrea Faulds.
  * 
