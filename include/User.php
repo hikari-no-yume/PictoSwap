@@ -113,7 +113,7 @@ class User
         $this->db->commit();
 
         for ($i = 0; $i < count($images); $i++) {
-            \ImagePNG($images[$i], 'previews/' . $letter_id . '-' . $i . '.png');
+            \ImagePNG($images[$i], PREVIEWS_PATH . $letter_id . '-' . $i . '.png');
             \ImageDestroy($images[$i]);
         }
     }
@@ -154,7 +154,8 @@ class User
                 'letter_id'     => (int)$letter['letter_id'],
                 'timestamp'     => $letter['timestamp'],
                 'read'          => (bool)$letter['read'],
-                'own'           => (bool)((int)$letter['from_id'] === getSessionUserId())
+                'own'           => (bool)((int)$letter['from_id'] === getSessionUserId()),
+                'auth_code'     => generateAuthCode((int)$letter['letter_id'])
             ];
         }, $letters);
         return $letters;

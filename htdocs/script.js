@@ -48,8 +48,7 @@
         }
     }
 
-    function getRequest(options) {
-        options.method = 'GET';
+    function makeGetRequestURL(options) {
         var params = '';
         if (options.hasOwnProperty('SID')) {
             params = options.SID;
@@ -62,7 +61,14 @@
                 params += key + '=' + encodeURIComponent(options.message[key]);
             }
         }
-        options.url = '/api.php?' + params;
+
+        return '/api.php?' + params;
+    }
+
+
+    function getRequest(options) {
+        options.method = 'GET';
+        options.url = makeGetRequestURL(options);
             
         makeRequest(options);
     }
@@ -792,7 +798,15 @@
         letters.forEach(function (letter, i) {
             var elem = $({
                 tagName: 'img',
-                src: 'previews/' + letter.letter_id + '-0.png',
+                src: makeGetRequestURL({
+                    message: {
+                        action: 'preview_image',
+                        letter_id: letter.letter_id,
+                        page: 0,
+                        auth_code: letter.auth_code
+                    },
+                    SID: SID,
+                }),
                 className: 'letter-preview',
                 parentElement: letterCarousel,
                 style: {

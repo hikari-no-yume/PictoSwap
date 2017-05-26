@@ -29,9 +29,25 @@ function startUserSession(array $sessionData) {
     foreach ($sessionData as $key => $value) {
         $_SESSION[$key] = $value;
     }
+    $_SESSION['image_auth_secret'] = \bin2hex(\random_bytes(32));
 }
 
 // Logs out the user
 function endUserSession() {
     \session_destroy();
+}
+
+// Generates an HMAC code proving the logged-in user can see a letter
+function generateAuthCode(int $letterId): string {
+    if (!(isset($_SESSION['image_auth_secret'], $_SESSION['user_id']))) {
+        error_log("Attempt to generate auth code for non-logged-in user");
+        return "";
+    }
+
+    return \hash_hmac('sha256', "The user $_SESSION[user_id] can see letter $letterId", $_SESSION['image_auth_secret']);
+}
+
+// Verifies an HMAC code
+function isValidAuthCode(string $authCode, int $letterId): bool {
+    return \hash_equals(generateAuthCode($letterId), $authCode);
 }

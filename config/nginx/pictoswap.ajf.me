@@ -18,9 +18,6 @@ server {
         include fastcgi_php_passthru;
     }
 
-    location /previews {
-        expires 365d;
-    }
     location /res {
         expires 14d;
     }

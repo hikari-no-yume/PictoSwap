@@ -125,6 +125,25 @@ try {
                     ]);
                 }
             break;
+            case 'preview_image':
+                $authCode = $_GET['auth_code'];
+                $letterId = (int)$_GET['letter_id'];
+                $page = (int)$_GET['page'];
+                ensureLoggedIn();
+
+                if (!isValidAuthCode($authCode, $letterId)) {
+                    header('HTTP/1.1 403 Forbidden');
+                    die;
+                }
+
+                $fp = @fopen(PREVIEWS_PATH . "/$letterId-$page.png", 'r');
+                if ($fp === FALSE) {
+                    header('HTTP/1.1 404 File Not Found');
+                } else {
+                    header('Content-Type: image/png');
+                    fpassthru($fp);
+                }
+            break;
             case 'get_friend_requests':
                 ensureLoggedIn();
                 $requests = $user->getFriendRequests();
