@@ -681,7 +681,7 @@
                 SID: SID,
                 onsuccess: function (data) {
                     if (data.requests.length === 0) {
-                        friendRequestList.innerHTML = 'You have not received any requests';
+                        friendRequestList.innerHTML = 'You have no pending requests';
                     } else {
                         friendRequestList.innerHTML = '';
                         data.requests.forEach(function (request) {
