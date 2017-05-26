@@ -798,15 +798,6 @@
         letters.forEach(function (letter, i) {
             var elem = $({
                 tagName: 'img',
-                src: makeGetRequestURL({
-                    message: {
-                        action: 'preview_image',
-                        letter_id: letter.letter_id,
-                        page: 0,
-                        auth_code: letter.auth_code
-                    },
-                    SID: SID,
-                }),
                 className: 'letter-preview',
                 parentElement: letterCarousel,
                 style: {
@@ -856,6 +847,25 @@
         function updateCarousel(newSelected) {
             selected = newSelected;
             letterCarousel.style.marginLeft = selected * -LETTER_GAP + 'px';
+
+            for (
+                var i = Math.max(0, selected - 1);
+                i <= Math.min(letters.length - 1, selected + 1);
+                i++
+            ) {
+                if (!letters[i].loaded) {
+                    letters[i].loaded = true;
+                    letterElements[i].src = makeGetRequestURL({
+                        message: {
+                            action: 'preview_image',
+                            letter_id: letters[i].letter_id,
+                            page: 0,
+                            auth_code: letters[i].auth_code
+                        },
+                        SID: SID,
+                    });
+                }
+            }
         }
 
         composeButton.onclick = function () {
