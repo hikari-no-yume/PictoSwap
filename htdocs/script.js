@@ -728,7 +728,7 @@
                                     },
                                     SID: SID,
                                     onsuccess: function () {
-                                        alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
+                                        alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request from '" + request.username + "'.");
                                         refreshFriendRequests();
                                         refreshFriends();
                                     }
@@ -797,7 +797,7 @@
                 },
                 SID: SID,
                 onsuccess: function () {
-                    alert("Sent friend request!");
+                    alert("Sent friend request to '" + addFriendBox.value + "'!");
                     addFriendBox.value = '';
                 }
             });
