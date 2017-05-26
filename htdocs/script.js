@@ -568,7 +568,7 @@
 
     // Makes friend requests popup
     function makeFriendRequests(SID) {
-        var friendRequests, logoutButton, newPassword, confirmNewPassword, changePasswordButton, friendRequestList, addFriendBox, addFriendButton;
+        var friendRequests, logoutButton, newPassword, confirmNewPassword, changePasswordButton, friendRequestList, addFriendBox, addFriendButton, friendList;
         friendRequests = $({
             tagName: 'div',
             id: 'friend-requests',
@@ -638,6 +638,22 @@
                         })
                     ]
                 }),
+                $({
+                    tagName: 'h2',
+                    children: [
+                        $('Friends')
+                    ]
+                }),
+                friendList = $({
+                    tagName: 'ul',
+                    id: 'friend-list',
+                    children: [
+                        $({
+                            tagName: 'img',
+                            src: 'res/spinner.gif'
+                        })
+                    ]
+                })
             ]
         });
 
@@ -673,7 +689,7 @@
             });
         };
 
-        (function refreshFriendRequests() {
+        function refreshFriendRequests() {
             getRequest({
                 message: {
                     action: 'get_friend_requests'
@@ -714,6 +730,7 @@
                                     onsuccess: function () {
                                         alert((mode === 'accept' ? 'Accepted' : 'Denied') + " friend request.");
                                         refreshFriendRequests();
+                                        refreshFriends();
                                     }
                                 });
                             };
@@ -721,7 +738,56 @@
                     }
                 }
             });
-        }());
+        };
+        refreshFriendRequests();
+
+        function refreshFriends() {
+            getRequest({
+                message: {
+                    action: 'get_friends'
+                },
+                SID: SID,
+                onsuccess: function (data) {
+                    if (data.friends.length === 0) {
+                        friendList.innerHTML = 'You have no friends';
+                    } else {
+                        friendList.innerHTML = '';
+                        data.friends.forEach(function (friend) {
+                            var friendRemove;
+                            $({
+                                tagName: 'li',
+                                parentElement: friendList,
+                                children: [
+                                    $(friend.username),
+                                    friendRemove = $({
+                                        tagName: 'button',
+                                        className: 'friend-remove'
+                                    })
+                                ]
+                            });
+                            friendRemove.onclick = function () {
+                                if (!confirm("Do you want to remove '" + friend.username + "' from your friends list?")) {
+                                    return;
+                                }
+
+                                postRequest({
+                                    message: {
+                                        action: 'friend_remove',
+                                        friend_user_id: friend.user_id
+                                    },
+                                    SID: SID,
+                                    onsuccess: function () {
+                                        alert("Removed '" + friend.username + "' from your friends list.");
+                                        refreshFriends();
+                                    }
+                                });
+                            };
+                        })
+                    }
+                }
+            });
+        };
+        refreshFriends();
 
         addFriendButton.onclick = function () {
             postRequest({

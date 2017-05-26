@@ -72,6 +72,11 @@ try {
                 $user->respondToFriendRequest($data->friend_user_id, $data->mode);
                 respondOk();
             break;
+            case 'friend_remove':
+                ensureLoggedIn();
+                $user->removeFriend($data->friend_user_id);
+                respondOk();
+            break;
             case 'register':
                 $manager->register($data->username, $data->password);
                 respondOk(201);
@@ -149,6 +154,14 @@ try {
                 $requests = $user->getFriendRequests();
                 respond([
                     'requests' => $requests,
+                    'error' => null
+                ]);
+            break;
+            case 'get_friends':
+                ensureLoggedIn();
+                $friends = $user->getFriends();
+                respond([
+                    'friends' => $friends,
                     'error' => null
                 ]);
             break;

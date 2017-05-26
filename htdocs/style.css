@@ -320,12 +320,12 @@ body {
     font-family: sans-serif;
 }
 
-#friend-request-list {
+#friend-request-list, #friend-list {
     padding-left: 20px;
     list-style-type: square;
 }
 
-.friend-request-accept, .friend-request-deny {
+.friend-request-accept, .friend-request-deny, .friend-remove {
     padding: 0;
     margin: 0 2px;
     border: 0;
@@ -338,6 +338,9 @@ body {
 }
 .friend-request-deny {
     background: transparent url(res/friend-deny.png) no-repeat no-repeat;
+}
+.friend-remove {
+    background: transparent url(res/friend-remove.png) no-repeat no-repeat;
 }
 
 #add-friend-box {

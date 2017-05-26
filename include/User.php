@@ -432,4 +432,83 @@ class User
             throw new PictoSwapException("The \"$mode\" mode is not supported.", 400);
         }
     }
+
+    // Gets friends as an array
+    public function getFriends(): array {
+        $stmt = $this->db->prepare('
+            SELECT
+                friendships.user_id_1 AS user_id,
+                users.username AS username
+            FROM
+                friendships
+            LEFT JOIN
+                users
+            ON
+                friendships.user_id_1 = users.user_id
+            WHERE
+                friendships.user_id_2 = :user_id_2
+                AND friendships.provisional = 0
+            ORDER BY
+                friendships.timestamp DESC
+            ;
+        ');
+        $stmt->execute([
+            ':user_id_2' => $this->user_id
+        ]);
+        $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return array_map(function (array $request): array {
+            return [
+                'user_id'       => (int)$request['user_id'],
+                'username'      => (string)$request['username']
+            ];
+        }, $requests);
+    }
+
+    // Removes someone from the user's friends list
+    function removeFriend(int $friend_user_id) {
+        // Check user exists
+        if (!$this->manager->userIdExists($friend_user_id)) {
+            throw new PictoSwapException("No such user.", 404);
+        }
+
+        // Check there is such a friend
+        $stmt = $this->db->prepare('
+            SELECT
+                COUNT(*)
+            FROM
+                friendships
+            WHERE
+                user_id_1 = :user_id_1
+                AND user_id_2 = :user_id_2
+                AND provisional = 0
+            LIMIT
+                1
+            ;
+        ');
+        $stmt->execute([
+            ':user_id_1' => $friend_user_id,
+            ':user_id_2' => $this->user_id
+        ]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$rows[0]['COUNT(*)']) {
+            throw new PictoSwapException("No such friend.", 404);
+        }
+
+        // Actually remove the friend
+        $this->db->beginTransaction();
+        $stmt = $this->db->prepare('
+            DELETE FROM
+                friendships
+            WHERE
+                user_id_1 = :user_id_1
+                AND user_id_2 = :user_id_2
+            ;
+        ');
+        $stmt->execute([
+            ':user_id_1' => $friend_user_id,
+            ':user_id_2' => $this->user_id
+        ]);
+        $this->db->commit();
+    }
 }
