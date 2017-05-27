@@ -256,7 +256,7 @@
         previewFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
         canvasFrame.style.backgroundImage = 'url(backgrounds/' + pageBackground + ')';
 
-        canvas.element.onmousedown = function (e) {
+        canvas.element.onmousedown = canvas.element.ontouchstart = function (e) {
             // Only allow drawing if we have enough ink
             if (!inkMeter.subtractInk(1)) {
                 return;
@@ -287,7 +287,7 @@
             lastX = e.layerX;
             lastY = e.layerY;
         };
-        var onMove = canvas.element.onmousemove = function (e) {
+        var onMove = canvas.element.onmousemove = canvas.element.ontouchmove = function (e) {
             // We cache x and y to avoid bizzare browser bugs
             // Don't ask me why, but the second time you read e.layerX, it becomes zero!
             var x = e.layerX, y = e.layerY;
@@ -314,7 +314,7 @@
             lastX = x;
             lastY = y;
         };
-        canvas.element.onmouseup = function (e) {
+        canvas.element.onmouseup = canvas.element.ontouchend = function (e) {
             if (drawing) {
                 onMove(e);
 
@@ -1191,6 +1191,8 @@
             });
         };
     }
+
+    document.ontouchmove = function(e) { e.preventDefault(); }
 
     window.onerror = alert;
     window.onload = function () {
