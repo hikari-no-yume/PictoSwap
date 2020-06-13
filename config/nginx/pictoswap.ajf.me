@@ -14,9 +14,8 @@ server {
         index       index.php;
     }
 
-    location ~ \.php$ {
-        include fastcgi_php_passthru;
-    }
+    # Bring your own PHP config, I suggest: https://www.nginx.com/resources/wiki/start/topics/examples/phpfcgi/
+    include fastcgi_php_passthru;
 
     location /res {
         expires 14d;
